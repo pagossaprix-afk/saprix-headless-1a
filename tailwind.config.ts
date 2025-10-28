@@ -6,13 +6,6 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  safelist: [
-    "bg-saprix-black-blue",
-    "text-saprix-white",
-    "text-saprix-indigo",
-    "text-saprix-electric-blue",
-    "font-inter",
-  ],
   theme: {
     extend: {
       colors: {
