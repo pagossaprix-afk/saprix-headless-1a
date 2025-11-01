@@ -1,16 +1,18 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import api from '@/lib/woocommerce';
 
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
 
 export async function GET(
-  _req: Request,
-  { params }: { params: { slug: string } }
+  _req: NextRequest,
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await context.params;
+
     const productResponse = await api.get('products', {
-      slug: params.slug,
+      slug,
       per_page: 1,
     });
 
