@@ -1,15 +1,23 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import api from '@/lib/woocommerce';
 
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
 
 export async function GET(
-  _req: NextRequest,
-  context: { params: Promise<{ slug: string }> }
+  _req: any,
+  context: any
 ) {
   try {
-    const { slug } = await context.params;
+    const maybeParams = context?.params;
+    const resolvedParams = maybeParams && typeof maybeParams.then === 'function' 
+      ? await maybeParams 
+      : maybeParams;
+    const slug = resolvedParams?.slug;
+
+    if (!slug) {
+      return NextResponse.json({ error: 'Missing slug param' }, { status: 400 });
+    }
 
     const productResponse = await api.get('products', {
       slug,
