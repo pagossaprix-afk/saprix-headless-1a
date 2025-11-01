@@ -1,0 +1,46 @@
+import { NextResponse } from 'next/server';
+import api from '@/lib/woocommerce';
+
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+
+export async function GET(
+  _req: Request,
+  { params }: { params: { slug: string } }
+) {
+  try {
+    const productResponse = await api.get('products', {
+      slug: params.slug,
+      per_page: 1,
+    });
+
+    if (!productResponse.data || productResponse.data.length === 0) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    }
+
+    const product = productResponse.data[0];
+
+    let variations: any[] = [];
+    if (product.type === 'variable' && product.variations?.length > 0) {
+      const variationsResponse = await api.get(`products/${product.id}/variations`);
+      variations = variationsResponse.data || [];
+    }
+
+    return NextResponse.json({
+      product: {
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        type: product.type,
+      },
+      attributes: product.attributes,
+      variation_ids: product.variations,
+      variations_sample: variations.slice(0, 1),
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: 'Failed to fetch product audit', message: error?.message ?? 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}

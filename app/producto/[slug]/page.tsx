@@ -1,6 +1,8 @@
 import api from "@/lib/woocommerce";
-import Image from "next/image";
-import { notFound } from "next/navigation"; // Pa' mandar 404 si no existe
+import Image from 'next/image';
+import { notFound } from 'next/navigation';
+// ¡Importamos el nuevo componente de cliente que vamos a crear!
+import ProductForm from "@/components/product/ProductForm";
 
 // 1. Definimos el tipo de 'props' que esta página recibe
 type ProductPageProps = {
@@ -9,38 +11,57 @@ type ProductPageProps = {
   };
 };
 
-// 2. Función pa' jalar el producto (Server-Side)
-async function getProductBySlug(slug: string) {
+// 1. Función MEJORADA: Trae el producto Y sus variaciones
+async function getProductData(slug: string) {
   try {
-    const response = await api.get("products", {
+    // Primero traemos el producto base por su slug
+    const productResponse = await api.get("products", {
       slug: slug,
-      per_page: 1, // Solo queremos uno
+      per_page: 1,
     });
 
-    // Si la API no devuelve nada, el producto no existe
-    if (response.data.length === 0) {
-      return null;
+    if (productResponse.data.length === 0) {
+      return null; // No se encontró
     }
 
-    // Devolvemos el primer (y único) producto del array
-    return response.data[0];
+    const product = productResponse.data[0];
+    console.log("--- DEBUG SERVIDOR (PRODUCTO BASE) ---");
+    console.log("Tipo de Producto:", product.type);
+    console.log("Atributos del Producto:", product.attributes);
+    console.log("Atributos del Producto (JSON):", JSON.stringify(product.attributes, null, 2));
+    console.log("IDs de Variaciones (Base):", product.variations);
+    let variations: any[] = [];
+
+    // ¡LA MAGIA! Si el producto es "variable" (tiene tallas/colores)
+    if (product.type === 'variable' && product.variations.length > 0) {
+      // Hacemos la SEGUNDA llamada pa' traer las variaciones
+      const variationsResponse = await api.get(`products/${product.id}/variations`);
+      variations = variationsResponse.data;
+      console.log("--- DEBUG SERVIDOR (VARIACIONES) ---");
+      console.log("¿Cuántas variaciones trajo la API? R:", variations.length);
+      console.log("Data de la primera variación (si existe):", variations[0]);
+    }
+
+    // Devolvemos todo el paquete
+    return { product, variations };
+
   } catch (error) {
-    console.error("ERROR BERRRACO JALANDO PRODUCTO POR SLUG:", error);
-    return null; // Fallo en la conexión
+    console.error("ERROR BERRRACO JALANDO PRODUCTO Y VARIACIONES:", error);
+    return null;
   }
 }
 
 // 3. La Página (¡El Componente Async!)
 export default async function ProductPage({ params }: ProductPageProps) {
-  const product = await getProductBySlug(params.slug);
+  
+  const data = await getProductData(params.slug);
 
-  // Si el producto es nulo (no se encontró o falló la API),
-  // le tiramos un 404 Nivel Dios al cliente
-  if (!product) {
-    notFound();
+  if (!data) {
+    notFound(); // 404 Nivel Dios
   }
 
-  const imageUrl = product.images?.[0]?.src || "/placeholder-image.png";
+  const { product, variations } = data;
+  const imageUrl = product.images?.[0]?.src || '/placeholder-image.png';
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -58,13 +79,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         {/* Columna Derecha: Información y Compra */}
         <div className="flex flex-col justify-center">
-          {/* Nombre del Producto */}
-          <h1 className="text-4xl font-semibold text-saprix-white">{product.name}</h1>
+          <h1 className="text-4xl font-semibold text-saprix-white">
+            {product.name}
+          </h1>
 
-          {/* Precio del Producto */}
-          <p className="mt-4 text-3xl font-bold text-saprix-electric-blue">
-            ${product.price}
-          </p>
+          {/* ¡OJO! El precio ahora lo manejará el componente de cliente */}
 
           {/* Descripción (Jalada de WordPress) */}
           {product.description && (
@@ -80,17 +99,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
           )}
 
-          {/* --- AQUÍ VA EL PRÓXIMO CAMELLO --- */}
-          <div className="mt-8 pt-8 border-t border-saprix-indigo">
-            <h3 className="text-xl font-semibold text-saprix-electric-blue">
-              ¡DOMINA LA CANCHA!
-            </h3>
-            <p className="mt-2 text-saprix-indigo">
-              Próximo camello: Aquí van los "Swatches" (Tallas y Colores)
-              y el botón de "Añadir al Carrito".
-            </p>
-          </div>
-          {/* --- FIN DEL PRÓXIMO CAMELLO --- */}
+          {/* --- ¡AQUÍ REEMPLAZAMOS EL CAMELLO! --- */}
+          {/* Le pasamos el producto y las variaciones que jalamos
+            al nuevo Componente de Cliente.
+          */}
+          <ProductForm product={product} variations={variations} />
+          {/* --- FIN DEL REEMPLAZO --- */}
         </div>
       </div>
     </div>
