@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { FiltersSidebar } from "@/components/shop/FiltersSidebar";
 import { ProductGrid, SortValue } from "@/components/shop/ProductGrid";
 import type { ProductSummary } from "@/components/shop/ProductCard";
@@ -234,11 +235,13 @@ export default async function TiendaPage({
 
           <div className="lg:col-span-3">
             {/* TODO: Agregar un botón en mobile para ABRIR el sidebar */}
-            <ProductGrid
-              products={mappedProducts}
-              meta={{ total, per_page, page }}
-              sort={sort.sort}
-            />
+            <Suspense fallback={<div className="text-sm text-gray-400">Cargando productos…</div>}>
+              <ProductGrid
+                products={mappedProducts}
+                meta={{ total, per_page, page }}
+                sort={sort.sort}
+              />
+            </Suspense>
             {mappedProducts.length === 0 && (
               <p className="mt-6 text-sm text-gray-400">No hay productos con estos filtros.</p>
             )}
