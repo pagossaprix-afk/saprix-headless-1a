@@ -157,6 +157,42 @@ export async function getSizeOptionsFromVariations(productId: number): Promise<A
 
 // -------- Catálogo global: categorías, etiquetas y atributos --------
 
+// Helpers basados en fetch para aprovechar ISR y autenticación por query string
+function buildUrl(endpoint: string, params: Record<string, any> = {}): string {
+  const base = (process.env.WOOCOMMERCE_API_URL || "").replace(/\/$/, "");
+  const ck = process.env.WOOCOMMERCE_CONSUMER_KEY || "";
+  const cs = process.env.WOOCOMMERCE_CONSUMER_SECRET || "";
+  const url = new URL(`${base}/wp-json/wc/v3/${endpoint}`);
+  Object.entries(params || {}).forEach(([k, v]) => {
+    if (v === undefined || v === null) return;
+    url.searchParams.set(k, String(v));
+  });
+  url.searchParams.set("consumer_key", ck);
+  url.searchParams.set("consumer_secret", cs);
+  return url.toString();
+}
+
+async function wcFetchRaw<T = any>(endpoint: string, params: Record<string, any> = {}, revalidate = 600): Promise<{ data: T; headers: Headers }> {
+  const url = buildUrl(endpoint, params);
+  const res = await fetch(url, { next: { revalidate } });
+  if (!res.ok) {
+    throw new Error(`WooCommerce fetch failed: ${res.status} ${res.statusText}`);
+  }
+  const data = (await res.json()) as T;
+  return { data, headers: res.headers };
+}
+
+async function wcFetchAll<T = any>(endpoint: string, params: Record<string, any> = {}, revalidate = 600): Promise<T[]> {
+  const first = await wcFetchRaw<T[]>(endpoint, { ...params, page: 1 }, revalidate);
+  const totalPages = parseInt(first.headers.get("x-wp-totalpages") || "1");
+  const all: T[] = Array.isArray(first.data) ? [...first.data] : [];
+  for (let page = 2; page <= totalPages; page++) {
+    const resp = await wcFetchRaw<T[]>(endpoint, { ...params, page }, revalidate);
+    if (Array.isArray(resp.data)) all.push(...resp.data);
+  }
+  return all;
+}
+
 async function paginate<T = any>(endpoint: string, params: Record<string, any> = {}): Promise<T[]> {
   const all: T[] = [];
   let page = 1;
@@ -179,27 +215,37 @@ async function paginate<T = any>(endpoint: string, params: Record<string, any> =
 }
 
 export async function getAllProductCategories(): Promise<any[]> {
-  return paginate("products/categories");
+  return wcFetchAll<any>("products/categories", { per_page: 100 }, 600);
 }
 
 export async function getAllProductTags(): Promise<any[]> {
-  return paginate("products/tags");
+  return wcFetchAll<any>("products/tags", { per_page: 100 }, 600);
 }
 
 export async function getAllProductAttributes(): Promise<any[]> {
-  return paginate("products/attributes");
+  return wcFetchAll<any>("products/attributes", { per_page: 100 }, 600);
 }
 
 export async function getAttributeTerms(attributeId: number): Promise<any[]> {
-  return paginate(`products/attributes/${attributeId}/terms`);
+  return wcFetchAll<any>(`products/attributes/${attributeId}/terms`, { per_page: 100 }, 600);
 }
 
 export async function getAllProductAttributesWithTerms(): Promise<Array<{ attribute: any; terms: any[] }>> {
   const attrs = await getAllProductAttributes();
-  const result: Array<{ attribute: any; terms: any[] }> = [];
-  for (const a of attrs) {
-    const terms = await getAttributeTerms(Number(a?.id));
-    result.push({ attribute: a, terms });
-  }
-  return result;
+  const termsList = await Promise.all((attrs || []).map((a: any) => getAttributeTerms(Number(a?.id))));
+  return attrs.map((a: any, idx: number) => ({ attribute: a, terms: termsList[idx] || [] }));
+}
+
+// Helper: traer datos del sidebar (categorías, tags y atributos con términos) en paralelo
+export async function getShopSidebarData(): Promise<{
+  categories: any[];
+  tags: any[];
+  attributes: Array<{ attribute: any; terms: any[] }>;
+}> {
+  const [categories, tags, attributes] = await Promise.all([
+    getAllProductCategories(),
+    getAllProductTags(),
+    getAllProductAttributesWithTerms(),
+  ]);
+  return { categories, tags, attributes };
 }

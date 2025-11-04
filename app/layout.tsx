@@ -3,7 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 
 // Importamos los nuevos componentes
-import Navbar from "@/components/layout/Navbar";
+import FutsalHeader from "@/components/layout/FutsalHeader";
+import HeaderMobile from "@/components/layout/HeaderMobile";
 import Footer from "@/components/layout/Footer";
 
 // Configurar la fuente Inter
@@ -27,9 +28,10 @@ export default function RootLayout({
       {/* Usamos flex pa' empujar el Footer pa' abajo (min-h-screen)
           y flex-col pa' apilarlos (Navbar, Contenido, Footer)
         */}
-      <body className={`${inter.variable} font-inter bg-saprix-black-blue text-saprix-white`}>
+      <body className={`${inter.variable} font-inter bg-white text-gray-800`}>
         <div className="flex flex-col min-h-screen">
-          <Navbar />
+          <HeaderMobile />
+          <FutsalHeader />
           <main className="flex-grow">{children}</main>
           <Footer />
         </div>
