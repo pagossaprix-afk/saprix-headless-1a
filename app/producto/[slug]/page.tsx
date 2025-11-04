@@ -1,112 +1,112 @@
-import api from "@/lib/woocommerce";
-import Image from 'next/image';
-import { notFound } from 'next/navigation';
-// ¡Importamos el nuevo componente de cliente que vamos a crear!
-import ProductForm from "@/components/product/ProductForm";
+import { applyMapping } from "@/lib/mapping";
+import { getProductBySlug, getProductVariations, getColorOptionsFromVariations, getSizeOptionsFromVariations } from "@/lib/woocommerce";
+import { productSingleMapping } from "@/config/mappings/product-single";
 
-// 1. Definimos el tipo de 'props' que esta página recibe
-type ProductPageProps = {
-  params: {
-    slug: string;
-  };
-};
+export const dynamic = "force-dynamic";
 
-// 1. Función MEJORADA: Trae el producto Y sus variaciones
-async function getProductData(slug: string) {
-  try {
-    // Primero traemos el producto base por su slug
-    const productResponse = await api.get("products", {
-      slug: slug,
-      per_page: 1,
-    });
+type Props = { params: { slug: string } };
 
-    if (productResponse.data.length === 0) {
-      return null; // No se encontró
-    }
-
-    const product = productResponse.data[0];
-    console.log("--- DEBUG SERVIDOR (PRODUCTO BASE) ---");
-    console.log("Tipo de Producto:", product.type);
-    console.log("Atributos del Producto:", product.attributes);
-    console.log("Atributos del Producto (JSON):", JSON.stringify(product.attributes, null, 2));
-    console.log("IDs de Variaciones (Base):", product.variations);
-    let variations: any[] = [];
-
-    // ¡LA MAGIA! Si el producto es "variable" (tiene tallas/colores)
-    if (product.type === 'variable' && product.variations.length > 0) {
-      // Hacemos la SEGUNDA llamada pa' traer las variaciones
-      const variationsResponse = await api.get(`products/${product.id}/variations`);
-      variations = variationsResponse.data;
-      console.log("--- DEBUG SERVIDOR (VARIACIONES) ---");
-      console.log("¿Cuántas variaciones trajo la API? R:", variations.length);
-      console.log("Data de la primera variación (si existe):", variations[0]);
-    }
-
-    // Devolvemos todo el paquete
-    return { product, variations };
-
-  } catch (error) {
-    console.error("ERROR BERRRACO JALANDO PRODUCTO Y VARIACIONES:", error);
-    return null;
+export default async function ProductPage({ params }: Props) {
+  const { slug } = params;
+  const product = await getProductBySlug(slug);
+  if (!product) {
+    return (
+      <main className="container mx-auto px-4 py-10 text-red-500">No se encontró el producto: {slug}</main>
+    );
   }
-}
-
-// 3. La Página (¡El Componente Async!)
-export default async function ProductPage({ params }: ProductPageProps) {
-  
-  const data = await getProductData(params.slug);
-
-  if (!data) {
-    notFound(); // 404 Nivel Dios
-  }
-
-  const { product, variations } = data;
-  const imageUrl = product.images?.[0]?.src || '/placeholder-image.png';
+  const variations = await getProductVariations(product.id);
+  const colorOptions = await getColorOptionsFromVariations(product.id);
+  const sizeOptions = await getSizeOptionsFromVariations(product.id);
+  const mapped = applyMapping(product, productSingleMapping);
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-        {/* Columna Izquierda: Galería de Imágenes (Por ahora solo la principal) */}
-        <div className="relative w-full aspect-square overflow-hidden rounded-lg border-2 border-saprix-indigo">
-          <Image
-            src={imageUrl}
-            alt={product.name}
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover"
+    <main className="container mx-auto px-4 py-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <img
+            src={mapped.image || "/placeholder-image.png"}
+            alt={mapped.name || "Producto"}
+            className="w-full h-auto rounded border border-saprix-indigo bg-dark-performance-800"
           />
         </div>
-
-        {/* Columna Derecha: Información y Compra */}
-        <div className="flex flex-col justify-center">
-          <h1 className="text-4xl font-semibold text-saprix-white">
-            {product.name}
-          </h1>
-
-          {/* ¡OJO! El precio ahora lo manejará el componente de cliente */}
-
-          {/* Descripción (Jalada de WordPress) */}
-          {product.description && (
-            <div className="mt-8">
-              <h2 className="text-lg font-semibold text-saprix-white">Descripción</h2>
-              {/* ¡JUGADA MAESTRA! Usamos esto pa' renderizar el HTML
-                  que viene de la descripción de WooCommerce (viñetas, negritas, etc.)
-              */}
-              <div
-                className="prose prose-invert mt-4 text-saprix-white max-w-none"
-                dangerouslySetInnerHTML={{ __html: product.description }}
-              />
+        <div>
+          <h1 className="text-2xl font-bold text-saprix-white">{mapped.name}</h1>
+          <p className="text-gray-400">Slug: {mapped.slug}</p>
+          <p className="text-gray-400">Tipo: {mapped.type}</p>
+          <div className="mt-4">
+            <span className="text-saprix-white text-xl font-semibold">{mapped.final_price ?? mapped.price ?? "—"}</span>
+            {mapped.regular_price && mapped.sale_price && (
+              <span className="ml-2 text-sm text-gray-500 line-through">{mapped.regular_price}</span>
+            )}
+          </div>
+          <div className="mt-2 text-xs text-gray-400">Stock: {mapped.stock_status ?? "unknown"}</div>
+          {mapped.short_description && (
+            <div className="mt-4 text-gray-300" dangerouslySetInnerHTML={{ __html: mapped.short_description }} />
+          )}
+          {mapped.description && (
+            <div className="mt-6">
+              <h3 className="text-saprix-white font-semibold mb-2">Descripción</h3>
+              <div className="prose prose-invert max-w-none text-gray-300" dangerouslySetInnerHTML={{ __html: mapped.description }} />
+            </div>
+          )}
+          {Array.isArray(mapped.tags) && mapped.tags.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-saprix-white font-semibold mb-2">Etiquetas</h3>
+              <div className="flex flex-wrap gap-2">
+                {mapped.tags.map((t: string) => (
+                  <span key={t} className="text-xs px-2 py-1 rounded bg-dark-performance-800 border border-saprix-indigo text-saprix-white">{t}</span>
+                ))}
+              </div>
             </div>
           )}
 
-          {/* --- ¡AQUÍ REEMPLAZAMOS EL CAMELLO! --- */}
-          {/* Le pasamos el producto y las variaciones que jalamos
-            al nuevo Componente de Cliente.
-          */}
-          <ProductForm product={product} variations={variations} />
-          {/* --- FIN DEL REEMPLAZO --- */}
+          <div className="mt-6">
+            <button className="px-5 py-2 rounded bg-saprix-electric-blue text-dark-performance-900 font-bold">¡Domina la Cancha!</button>
+          </div>
+          <div className="mt-3 text-xs text-gray-500">Variaciones encontradas: {variations.length}</div>
+          {colorOptions.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-saprix-white font-semibold">Colores disponibles</h3>
+              <div className="flex flex-wrap gap-3 mt-2">
+                {colorOptions.map((c) => (
+                  <div key={c.option} className="flex items-center gap-2 px-3 py-2 rounded border border-saprix-indigo bg-dark-performance-800">
+                    {c.image && (
+                      <img src={c.image} alt={c.option} className="w-8 h-8 rounded object-cover" />
+                    )}
+                    <span className="text-sm text-saprix-white">{c.option}</span>
+                    <span className="text-[10px] text-gray-400">({c.variations.length} variaciones)</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {sizeOptions.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-saprix-white font-semibold">Tallas disponibles</h3>
+              <div className="flex flex-wrap gap-3 mt-2">
+                {sizeOptions.map((s) => (
+                  <div key={s.option} className="flex items-center gap-2 px-3 py-2 rounded border border-saprix-indigo bg-dark-performance-800">
+                    <span className="text-sm text-saprix-white">{s.option}</span>
+                    <span className="text-[10px] text-gray-400">({s.variations.length} variaciones)</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+      <div className="mt-10">
+        <h2 className="text-saprix-white font-semibold mb-2">Debug (mapeo aplicado)</h2>
+        <pre className="text-xs bg-dark-performance-800 rounded p-3 text-gray-300 overflow-auto max-h-72">{JSON.stringify(mapped, null, 2)}</pre>
+      </div>
+      <div className="mt-6">
+        <h2 className="text-saprix-white font-semibold mb-2">Debug (colores desde variaciones)</h2>
+        <pre className="text-xs bg-dark-performance-800 rounded p-3 text-gray-300 overflow-auto max-h-72">{JSON.stringify(colorOptions, null, 2)}</pre>
+      </div>
+      <div className="mt-6">
+        <h2 className="text-saprix-white font-semibold mb-2">Debug (tallas desde variaciones)</h2>
+        <pre className="text-xs bg-dark-performance-800 rounded p-3 text-gray-300 overflow-auto max-h-72">{JSON.stringify(sizeOptions, null, 2)}</pre>
+      </div>
+    </main>
   );
 }
