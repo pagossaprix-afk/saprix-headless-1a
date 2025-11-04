@@ -13,6 +13,7 @@ const config: Config = {
         "saprix-electric-blue": "#2500ff", // Paleta Acento [cite: 15]
         "saprix-indigo": "#233775", // Paleta Secundario [cite: 16]
         "saprix-white": "#FFFFFF", // Texto [cite: 17]
+        "saprix-red-orange": "#FF6600", // Hover/acento cálido de marca (según especificación)
       },
       fontFamily: {
         inter: ["var(--font-inter)", "sans-serif"], // Tipografía
