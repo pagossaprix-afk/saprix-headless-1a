@@ -3,7 +3,7 @@ import { productSingleMapping } from "@/config/mappings/product-single";
 import { applyMapping } from "@/lib/mapping";
 import { getProductBySlug, getLatestProduct, getAllProductCategories, getAllProductTags, getAllProductAttributesWithTerms } from "@/lib/woocommerce";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 type CategoryKey =
   | "Identidad"
