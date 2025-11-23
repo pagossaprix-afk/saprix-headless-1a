@@ -1,32 +1,61 @@
+"use client";
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { useCart } from '@/context/CartContext';
+import { ShoppingCart } from 'lucide-react';
+import { MouseEvent } from 'react';
 
 interface ProductCardProps {
+  id: number;
   name: string;
   price: string;
   imageUrl: string;
   slug: string;
 }
 
-export default function ProductCard({ name, price, imageUrl, slug }: ProductCardProps) {
+export default function ProductCard({ id, name, price, imageUrl, slug }: ProductCardProps) {
+  const { addItem } = useCart();
   // Imagen 'placeholder' por si un guayo no tiene foto
-  const finalImageUrl = imageUrl || '/placeholder-image.png'; // (Aún no tenemos este placeholder, pero es buena práctica)
+  const finalImageUrl = imageUrl || '/placeholder-image.png';
+
+  const handleAddToCart = (e: MouseEvent) => {
+    e.preventDefault(); // Prevent navigation
+    e.stopPropagation();
+
+    // Parse price string to number (remove non-numeric chars except dot)
+    const numericPrice = parseFloat(price.replace(/[^0-9.]/g, '')) || 0;
+
+    addItem({
+      id,
+      name,
+      price: numericPrice,
+      quantity: 1,
+      image: finalImageUrl,
+      slug
+    });
+  };
 
   return (
-    <Link href={`/producto/${slug}`} className="group block">
+    <Link href={`/producto/${slug}`} className="group block relative">
       <div className="overflow-hidden bg-saprix-indigo rounded-lg border-2 border-saprix-indigo transition-all duration-300 hover:border-saprix-electric-blue">
         {/* Contenedor de la Imagen */}
         <div className="relative w-full aspect-square">
           <Image
             src={finalImageUrl}
             alt={name}
-            fill // "fill" hace que llene el div contenedor
+            fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             className="object-cover transition-transform duration-300 group-hover:scale-110"
-            // ¡OJO! Si no hay imagen (finalImageUrl es /placeholder-image.png),
-            // descomente la línea de abajo pa' evitar errores:
-            // unoptimized={!imageUrl}
           />
+          {/* Quick Add Button */}
+          <button
+            onClick={handleAddToCart}
+            className="absolute bottom-2 right-2 p-2 bg-lime-400 text-black rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-lime-300 transform translate-y-2 group-hover:translate-y-0"
+            title="Agregar al carrito"
+          >
+            <ShoppingCart className="w-5 h-5" />
+          </button>
         </div>
       </div>
 

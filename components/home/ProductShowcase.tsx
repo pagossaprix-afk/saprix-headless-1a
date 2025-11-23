@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useCart } from '@/context/CartContext';
 
 interface Product {
     id: number;
@@ -10,6 +11,7 @@ interface Product {
     slug: string;
     images: Array<{ src: string; alt?: string }>;
     price_html?: string;
+    price?: string;
 }
 
 interface ProductShowcaseProps {
@@ -46,6 +48,28 @@ export default function ProductShowcase({
                 ease: 'easeOut',
             },
         },
+    };
+
+    const { addItem } = useCart();
+
+    const handleAddToCart = (e: React.MouseEvent, product: Product) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Extract numeric price from price_html if possible, or default to 0
+        // This is a fallback since we don't have raw price here yet
+        // Ideally we should pass raw price from parent
+        const priceString = product.price || product.price_html?.replace(/[^0-9.]/g, '') || "0";
+        const price = parseFloat(priceString);
+
+        addItem({
+            id: product.id,
+            name: product.name,
+            price: price,
+            quantity: 1,
+            image: product.images[0]?.src || '/placeholder-image.png',
+            slug: product.slug
+        });
     };
 
     return (
@@ -146,11 +170,15 @@ export default function ProductShowcase({
                                         <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-saprix-electric-blue dark:group-hover:text-saprix-lime transition-colors">
                                             Ver producto →
                                         </span>
-                                        <div className="w-10 h-10 rounded-full bg-saprix-electric-blue text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                        <button
+                                            onClick={(e) => handleAddToCart(e, product)}
+                                            className="w-10 h-10 rounded-full bg-saprix-electric-blue text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 hover:bg-saprix-electric-blue-dark"
+                                            title="Agregar al carrito"
+                                        >
                                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                             </svg>
-                                        </div>
+                                        </button>
                                     </div>
                                 </div>
                             </Link>

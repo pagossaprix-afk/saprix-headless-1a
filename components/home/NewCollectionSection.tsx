@@ -7,6 +7,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCreative, Autoplay, Pagination, Navigation } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
 import { useState } from 'react';
+import { useCart } from '@/context/CartContext';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -20,6 +21,7 @@ interface Product {
     slug: string;
     images: Array<{ src: string; alt?: string }>;
     price_html?: string;
+    price?: string;
 }
 
 interface NewCollectionSectionProps {
@@ -29,6 +31,7 @@ interface NewCollectionSectionProps {
 export default function NewCollectionSection({ products }: NewCollectionSectionProps) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [swiper, setSwiper] = useState<SwiperType | null>(null);
+    const { addItem } = useCart();
 
     // Si no hay productos, mostrar mensaje
     if (!products || products.length === 0) {
@@ -133,12 +136,27 @@ export default function NewCollectionSection({ products }: NewCollectionSectionP
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                         </svg>
                                     </Link>
-                                    <Link
-                                        href="/tienda"
-                                        className="px-8 py-4 bg-saprix-lime text-black font-semibold rounded-full hover:bg-saprix-lime/80 transition-all duration-300 shadow-lg hover:shadow-xl"
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            const priceString = currentProduct.price || currentProduct.price_html?.replace(/[^0-9.]/g, '') || "0";
+                                            const price = parseFloat(priceString);
+                                            addItem({
+                                                id: currentProduct.id,
+                                                name: currentProduct.name,
+                                                price: price,
+                                                quantity: 1,
+                                                image: currentProduct.images[0]?.src || '/placeholder-image.png',
+                                                slug: currentProduct.slug
+                                            });
+                                        }}
+                                        className="px-8 py-4 bg-saprix-lime text-black font-semibold rounded-full hover:bg-saprix-lime/80 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2"
                                     >
-                                        Ver Colección
-                                    </Link>
+                                        Añadir al Carrito
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                        </svg>
+                                    </button>
                                 </motion.div>
 
                                 {/* Price */}

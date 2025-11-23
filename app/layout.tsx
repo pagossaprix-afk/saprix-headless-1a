@@ -1,38 +1,25 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-
-// Theme Provider
 import { ThemeProvider } from "@/components/ThemeProvider";
-
-// Layout Components
-import FutsalHeader from "@/components/layout/FutsalHeader";
-import HeaderMobileClient from "@/components/layout/HeaderMobileClient";
-import DixorFooter from "@/components/layout/Footer";
-import NewCollectionCountdown from "@/components/home/NewCollectionCountdown";
 import CustomCursor from "@/components/ui/CustomCursor";
 import TabNotifier from "@/components/ui/TabNotifier";
+import HeaderMobileClient from "@/components/layout/HeaderMobileClient";
+import FutsalHeader from "@/components/layout/FutsalHeader";
+import NewCollectionCountdown from "@/components/home/NewCollectionCountdown";
+import DixorFooter from "@/components/layout/Footer";
+import { CartProvider } from "@/context/CartContext";
+import CartDrawer from "@/components/cart/CartDrawer";
 
-// Configurar la fuente Inter
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "Saprix Tienda Deportiva Futsal Microfutbol",
-    template: "%s | Saprix Tienda Deportiva Futsal Microfutbol",
-  },
-  description: "Todo para Futsal: Zapatillas, Balones y Más",
-  icons: {
-    icon: [
-      { url: "/favicon%20Saprix.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon%20Saprix.png", sizes: "64x64", type: "image/png" },
-      { url: "/favicon.ico" },
-    ],
-    shortcut: "/favicon%20Saprix.png",
-  },
+  title: "Saprix | Calzado Deportivo Premium",
+  description: "Tienda oficial de Saprix. Encuentra los mejores guayos y zapatillas deportivas.",
 };
 
 export default function RootLayout({
@@ -49,17 +36,20 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
-          <div className="flex flex-col min-h-screen">
-            <CustomCursor />
-            <TabNotifier />
-            <HeaderMobileClient />
-            <FutsalHeader />
-            <main className="flex-grow">{children}</main>
-            <NewCollectionCountdown />
-            <DixorFooter />
-          </div>
+          <CartProvider>
+            <div className="flex flex-col min-h-screen">
+              <CustomCursor />
+              <TabNotifier />
+              <HeaderMobileClient />
+              <FutsalHeader />
+              <main className="flex-grow">{children}</main>
+              <NewCollectionCountdown />
+              <DixorFooter />
+              <CartDrawer />
+            </div>
+          </CartProvider>
         </ThemeProvider>
       </body>
-    </html >
+    </html>
   );
 }

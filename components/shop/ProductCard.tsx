@@ -14,6 +14,7 @@ export type ProductSummary = {
 export function ProductCard({ product }: { product: ProductSummary }) {
   return (
     <BaseProductCard
+      id={product.id}
       name={product.name}
       price={product.sale_price || product.price}
       imageUrl={product.image_url}

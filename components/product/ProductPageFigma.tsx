@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { Star, Heart, ShoppingCart, Truck, Shield, RotateCcw, Plus, Minus } from "lucide-react";
 import { buttonStyles, cardStyles, layout } from "@/lib/design-system";
+import { useCart } from "@/context/CartContext";
 
 type Media = { src: string; alt?: string };
 type ColorOption = { option: string; variations: number[]; image?: string };
@@ -52,19 +53,26 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
     }
   }, []);
 
+  const { addItem } = useCart();
+
   function addToCart() {
-    try {
-      const raw = localStorage.getItem("cartItems") || "[]";
-      const items = JSON.parse(raw);
-      const imagen = mainImages?.[0]?.src || "/placeholder-image.png";
-      const nombre = mapped?.name || slug;
-      const precio = Number(mapped?.final_price || mapped?.price || 0);
-      const next = Array.isArray(items) ? items.slice() : [];
-      next.push({ slug, nombre, imagen, precio, quantity, variantId: selectedVariantId });
-      localStorage.setItem("cartItems", JSON.stringify(next));
-      const totalQty = next.reduce((acc: number, it: any) => acc + (Number(it.quantity) || 1), 0);
-      localStorage.setItem("cartCount", String(totalQty));
-    } catch {}
+    const imagen = mainImages?.[0]?.src || "/placeholder-image.png";
+    const nombre = mapped?.name || slug;
+    const precio = Number(mapped?.final_price || mapped?.price || 0);
+
+    addItem({
+      id: mapped?.id || 0, // Ensure we have an ID. If mapped doesn't have it, we might have an issue.
+      name: nombre,
+      price: precio,
+      quantity: quantity,
+      image: imagen,
+      slug: slug,
+      variationId: selectedVariantId,
+      attributes: {
+        Color: selectedColor,
+        Talla: selectedSize
+      }
+    });
   }
 
   function toggleWishlist() {
@@ -107,9 +115,8 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
                 <button
                   key={`${image.src}-${index}`}
                   onClick={() => setSelectedImage(index)}
-                  className={`aspect-square bg-white rounded-xl overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
-                    selectedImage === index ? "border-saprix-electric-blue shadow-md" : "border-saprix-gray-200 hover:border-saprix-gray-300"
-                  }`}
+                  className={`aspect-square bg-white rounded-xl overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${selectedImage === index ? "border-saprix-electric-blue shadow-md" : "border-saprix-gray-200 hover:border-saprix-gray-300"
+                    }`}
                 >
                   <Image src={image.src} alt={image.alt || mapped?.name || slug} width={120} height={120} className="w-full h-full object-cover" />
                 </button>
