@@ -113,7 +113,7 @@ export default async function HomePage() {
           <div className="relative w-full h-full">
             {/* Usamos img tag para evitar problemas de importación estática si no es necesario optimizar al máximo esta decoración */}
             <img
-              src="/LONDRES/LONDRES123.png"
+              src="/LONDRES/Zapatillas Londres Saprix Futsal Microfutbol  (1).png"
               alt="Saprix Background"
               className="w-full h-full object-cover object-center mask-image-gradient"
               style={{ maskImage: 'linear-gradient(to left, black, transparent)' }}

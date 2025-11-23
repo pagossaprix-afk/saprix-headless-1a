@@ -32,7 +32,7 @@ export default function BrandStory() {
                             {/* Two smaller images */}
                             <div className="relative aspect-square rounded-3xl overflow-hidden bg-gray-100 dark:bg-gray-800 group">
                                 <Image
-                                    src="/ACCESORIOS/1.png"
+                                    src="/ACCESORIOS/Balon Saprix Futsal Microfutbol.png"
                                     alt="Saprix Equipment"
                                     fill
                                     className="object-contain p-4 transition-transform duration-700 group-hover:scale-110"
@@ -40,7 +40,7 @@ export default function BrandStory() {
                             </div>
                             <div className="relative aspect-square rounded-3xl overflow-hidden bg-gray-100 dark:bg-gray-800 group">
                                 <Image
-                                    src="/LONDRES/LONDRESBLANCAS1.png"
+                                    src="/LONDRES/Zapatillas Londres Saprix Futsal Microfutbol  (5).png"
                                     alt="Saprix Technology"
                                     fill
                                     className="object-contain p-4 transition-transform duration-700 group-hover:scale-110"

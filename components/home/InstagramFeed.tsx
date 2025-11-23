@@ -8,61 +8,61 @@ import { Instagram } from "lucide-react";
 const feedImages = [
     {
         id: 1,
-        src: "/LONDRES/LONDRES1.1.2.png",
+        src: "/LONDRES/Zapatillas Londres Saprix Futsal Microfutbol  (2).png",
         alt: "Saprix Londres Edición Especial",
         caption: "Domina la cancha con los nuevos Saprix Londres. Diseño y confort para los más exigentes."
     },
     {
         id: 2,
-        src: "/ACCESORIOS/1.png",
+        src: "/ACCESORIOS/Balon Saprix Futsal Microfutbol.png",
         alt: "Balón Oficial Saprix",
         caption: "El balón oficial para tus mejores partidos. Precisión garantizada en cada pase y remate."
     },
     {
         id: 3,
-        src: "/LONDRES/LONDRESAZULCIELO1.png",
+        src: "/LONDRES/Zapatillas Londres Saprix Futsal Microfutbol  (3).png",
         alt: "Saprix Azul Cielo",
         caption: "Color Azul Cielo para destacar en cada jugada. Edición limitada disponible ahora."
     },
     {
         id: 4,
-        src: "/LONDRES/LONDRESNEGRA.png",
+        src: "/LONDRES/Zapatillas Londres Saprix Futsal Microfutbol  (4).png",
         alt: "Saprix Clásicos Negros",
         caption: "Clásicos que nunca fallan. Saprix Negro, elegancia y poder en tus pies."
     },
     {
         id: 5,
-        src: "/ACCESORIOS/16.png",
+        src: "/ACCESORIOS/Guantes Saprix Futsal Microfutbol.png",
         alt: "Equipamiento Pro",
         caption: "Equipamiento profesional para llevar tu juego al siguiente nivel. Calidad superior."
     },
     {
         id: 6,
-        src: "/LONDRES/LONDRESBLANCAS1.png",
+        src: "/LONDRES/Zapatillas Londres Saprix Futsal Microfutbol  (5).png",
         alt: "Saprix Blancos Premium",
         caption: "Blancos Premium. Limpieza y estilo en tus pies para brillar en la cancha."
     },
     {
         id: 7,
-        src: "/ACCESORIOS/17.png",
+        src: "/ACCESORIOS/Maletin Saprix Futsal Microfutbol (1).png",
         alt: "Accesorios de Entrenamiento",
         caption: "Entrena como un pro con nuestros accesorios de alta resistencia y durabilidad."
     },
     {
         id: 8,
-        src: "/LONDRES/LONDRES123.png",
+        src: "/LONDRES/Zapatillas Londres Saprix Futsal Microfutbol  (6).png",
         alt: "Colección Urbana",
         caption: "Colección Urbana. Llévalos dentro y fuera de la cancha con el mejor estilo."
     },
     {
         id: 9,
-        src: "/ACCESORIOS/18.png",
+        src: "/ACCESORIOS/Medias Saprix Futsal Microfutbol (1).png",
         alt: "Rodilleras Profesionales",
         caption: "Protección total con nuestras rodilleras profesionales. Juega seguro y sin miedo."
     },
     {
         id: 10,
-        src: "/LONDRES/LONDRESAZULCIELO1.2.png",
+        src: "/LONDRES/Zapatillas Londres Saprix Futsal Microfutbol  (7).png",
         alt: "Detalles Saprix",
         caption: "Cada detalle cuenta. Descubre la calidad Saprix en cada costura y material."
     },
