@@ -2,6 +2,7 @@ import Link from "next/link";
 import { productSingleMapping } from "@/config/mappings/product-single";
 import { applyMapping } from "@/lib/mapping";
 import { getProductBySlug, getLatestProduct, getAllProductCategories, getAllProductTags, getAllProductAttributesWithTerms } from "@/lib/woocommerce";
+import type { Product } from "@/types/woocommerce";
 
 export const dynamic = "force-dynamic";
 
@@ -124,7 +125,7 @@ export default async function MappingReferencePage({ searchParams }: { searchPar
 
   // Producto de referencia (slug opcional, fallback: más reciente)
   const slug = searchParams?.slug;
-  const sample = slug ? await getProductBySlug(slug) : await getLatestProduct();
+  const sample: Product | null = slug ? await getProductBySlug(slug) : await getLatestProduct();
   const mapped = sample ? applyMapping(sample, productSingleMapping) : null;
 
   // Catálogo global (todas las categorías/etiquetas/atributos)
@@ -187,7 +188,7 @@ export default async function MappingReferencePage({ searchParams }: { searchPar
             <h3 className="text-saprix-white text-sm font-semibold">Colores desde variaciones</h3>
             <p className="mt-1 text-xs text-gray-400">Helper: <code className="font-mono">getColorOptionsFromVariations(productId)</code></p>
             <pre className="mt-3 text-xs bg-dark-performance-800 rounded p-3 text-gray-300 overflow-auto max-h-56">
-{`import { getColorOptionsFromVariations } from "@/lib/woocommerce";
+              {`import { getColorOptionsFromVariations } from "@/lib/woocommerce";
 
 const colors = await getColorOptionsFromVariations(productId);
 // Resultado:
@@ -201,7 +202,7 @@ const colors = await getColorOptionsFromVariations(productId);
             <h3 className="text-saprix-white text-sm font-semibold">Tallas desde variaciones</h3>
             <p className="mt-1 text-xs text-gray-400">Helper: <code className="font-mono">getSizeOptionsFromVariations(productId)</code></p>
             <pre className="mt-3 text-xs bg-dark-performance-800 rounded p-3 text-gray-300 overflow-auto max-h-56">
-{`import { getSizeOptionsFromVariations } from "@/lib/woocommerce";
+              {`import { getSizeOptionsFromVariations } from "@/lib/woocommerce";
 
 const sizes = await getSizeOptionsFromVariations(productId);
 // Resultado:
