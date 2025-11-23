@@ -15,6 +15,7 @@ export default function Spotlight({ color = "#2500ff", size = 280, className = "
     const el = ref.current;
     if (!el) return;
     function onMove(e: MouseEvent) {
+      if (!el) return;
       const rect = el.getBoundingClientRect();
       setPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     }

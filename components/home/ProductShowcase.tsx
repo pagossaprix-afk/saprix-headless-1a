@@ -82,7 +82,13 @@ export default function ProductShowcase({
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
                 >
                     {displayProducts.map((product) => (
-                        <motion.div key={product.id} variants={itemVariants}>
+                        <motion.div
+                            key={product.id}
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6 }}
+                        >
                             <Link
                                 href={`/producto/${product.slug}`}
                                 className="group block bg-white dark:bg-gray-900/40 dark:backdrop-blur-md dark:border dark:border-white/10 rounded-3xl overflow-hidden hover:shadow-2xl dark:hover:shadow-saprix-electric-blue/30 dark:hover:border-saprix-electric-blue/50 transition-all duration-500"
