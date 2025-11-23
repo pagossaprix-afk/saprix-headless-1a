@@ -4,9 +4,9 @@ export interface ProductImage {
 }
 
 export interface ProductAttribute {
-  id?: number;
+  id: number;
   name: string; // "Color", "Tallas" o prefijado "pa_..."
-  slug?: string;
+  slug: string;
   options: string[];
   variation?: boolean;
 }

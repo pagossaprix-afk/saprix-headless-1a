@@ -2,10 +2,15 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-// Importamos los nuevos componentes
+// Theme Provider
+import { ThemeProvider } from "@/components/ThemeProvider";
+
+// Layout Components
 import FutsalHeader from "@/components/layout/FutsalHeader";
-import HeaderMobile from "@/components/layout/HeaderMobile";
-import Footer from "@/components/layout/Footer";
+import HeaderMobileClient from "@/components/layout/HeaderMobileClient";
+import DixorFooter from "@/components/layout/Footer";
+import NewCollectionCountdown from "@/components/home/NewCollectionCountdown";
+import CustomCursor from "@/components/ui/CustomCursor";
 
 // Configurar la fuente Inter
 const inter = Inter({
@@ -24,18 +29,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      {/* Usamos flex pa' empujar el Footer pa' abajo (min-h-screen)
-          y flex-col pa' apilarlos (Navbar, Contenido, Footer)
-        */}
-      <body className={`${inter.variable} font-inter bg-white text-gray-800`}>
-        <div className="flex flex-col min-h-screen">
-          <HeaderMobile />
-          <FutsalHeader />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-        </div>
+    <html lang="es" suppressHydrationWarning>
+      <body className={`${inter.variable} font-inter bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange={false}
+        >
+          <div className="flex flex-col min-h-screen">
+            <CustomCursor />
+            <HeaderMobileClient />
+            <FutsalHeader />
+            <main className="flex-grow">{children}</main>
+            <NewCollectionCountdown />
+            <DixorFooter />
+          </div>
+        </ThemeProvider>
       </body>
-    </html>
+    </html >
   );
 }
