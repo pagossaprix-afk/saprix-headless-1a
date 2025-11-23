@@ -11,6 +11,7 @@ import HeaderMobileClient from "@/components/layout/HeaderMobileClient";
 import DixorFooter from "@/components/layout/Footer";
 import NewCollectionCountdown from "@/components/home/NewCollectionCountdown";
 import CustomCursor from "@/components/ui/CustomCursor";
+import TabNotifier from "@/components/ui/TabNotifier";
 
 // Configurar la fuente Inter
 const inter = Inter({
@@ -19,8 +20,19 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Saprix E-commerce 1A",
+  title: {
+    default: "Saprix Tienda Deportiva Futsal Microfutbol",
+    template: "%s | Saprix Tienda Deportiva Futsal Microfutbol",
+  },
   description: "Todo para Futsal: Zapatillas, Balones y Más",
+  icons: {
+    icon: [
+      { url: "/favicon%20Saprix.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon%20Saprix.png", sizes: "64x64", type: "image/png" },
+      { url: "/favicon.ico" },
+    ],
+    shortcut: "/favicon%20Saprix.png",
+  },
 };
 
 export default function RootLayout({
@@ -39,6 +51,7 @@ export default function RootLayout({
         >
           <div className="flex flex-col min-h-screen">
             <CustomCursor />
+            <TabNotifier />
             <HeaderMobileClient />
             <FutsalHeader />
             <main className="flex-grow">{children}</main>

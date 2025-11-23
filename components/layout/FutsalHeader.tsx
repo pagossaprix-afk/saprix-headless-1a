@@ -192,7 +192,7 @@ export default function FutsalHeader() {
             <div key={i} className="flex items-center gap-12">
               <span className="flex items-center gap-2">
                 <span className="text-saprix-electric-blue text-base">🏪</span>
-                <span>Tiendas: Bogotá • Medellín • Cúcuta</span>
+                <span>Tiendas: Bogotá</span>
               </span>
               <span className="flex items-center gap-2">
                 <span className="text-yellow-400 text-base">🛡️</span>
