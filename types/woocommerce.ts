@@ -20,6 +20,14 @@ export interface Product {
   attributes: ProductAttribute[];
   price_html?: string;
   meta_data?: MetaData[];
+  categories?: Category[];
+  tags?: Tag[];
+  short_description?: string;
+  description?: string;
+  price?: string;
+  regular_price?: string;
+  sale_price?: string;
+  stock_status?: string;
 }
 
 export interface VariationAttribute {
