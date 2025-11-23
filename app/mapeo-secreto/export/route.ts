@@ -1,9 +1,10 @@
-import api from "@/lib/woocommerce";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+// ... otros imports
 
-export const dynamic = "force-dynamic";
+// AGREGA ESTA LÍNEA EXACTA:
+export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
+export async function GET(request: Request) {
   console.log("Export route called");
   try {
     const url = new URL(req.url);
