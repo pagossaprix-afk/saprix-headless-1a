@@ -76,7 +76,8 @@ export default function StatsSection() {
                         >
                             <img
                                 src="/LONDRES/Zapatillas Londres Saprix Futsal Microfutbol  (1).png"
-                                alt="Saprix Shoe"
+                                alt=""
+                                aria-hidden="true"
                                 className="w-full h-full object-contain drop-shadow-2xl"
                             />
                         </motion.div>
