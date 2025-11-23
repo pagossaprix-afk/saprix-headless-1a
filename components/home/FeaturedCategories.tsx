@@ -17,8 +17,31 @@ interface FeaturedCategoriesProps {
 }
 
 export default function FeaturedCategories({ categories }: FeaturedCategoriesProps) {
-    // Tomar las primeras 4 categorías
-    const displayCategories = categories.slice(0, 4);
+  // Tomar las primeras 4 categorías
+  const displayCategories = categories.slice(0, 4);
+
+  const mediaByName: Record<string, { src: string; kind: "image" | "video"; alt?: string }> = {
+    "accesorios deportivos futsal": {
+      src: "/ACCESORIOS/Guantes Saprix Futsal Microfutbol.mp4",
+      kind: "video",
+      alt: "Guantes Saprix Futsal",
+    },
+    "balones futsal": {
+      src: "/ACCESORIOS/Balon Saprix Futsal Microfutbol.png",
+      kind: "image",
+      alt: "Balón Saprix Futsal",
+    },
+    "berlin": {
+      src: "/ROMA/Zapatillas Roma Saprix Futsal Microfutbol (1).mp4",
+      kind: "video",
+      alt: "Zapatillas Roma (Video)",
+    },
+    "clásicas": {
+      src: "/ROMA/Zapatillas Roma Saprix Futsal Microfutbol (2).mp4",
+      kind: "video",
+      alt: "Zapatillas Roma (Video)",
+    },
+  };
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -76,33 +99,53 @@ export default function FeaturedCategories({ categories }: FeaturedCategoriesPro
                             >
                                 {/* Image Container */}
                                 <div className="relative aspect-[3/4] overflow-hidden">
-                                    {category.image?.src ? (
-                                        <Image
-                                            src={category.image.src}
-                                            alt={category.image.alt || category.name}
-                                            fill
-                                            className="object-cover group-hover:scale-110 transition-transform duration-700"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
-                                            <svg
-                                                className="w-24 h-24 text-gray-300 dark:text-gray-600"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={1}
-                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    {(() => {
+                                        const key = category.name.toLowerCase();
+                                        const custom = mediaByName[key];
+                                        const media = custom || (category.image?.src ? { src: category.image.src, kind: "image", alt: category.image.alt || category.name } : undefined);
+                                        if (media?.kind === "video") {
+                                            return (
+                                                <video
+                                                    src={media.src}
+                                                    className="w-full h-full object-cover"
+                                                    autoPlay
+                                                    muted
+                                                    loop
+                                                    playsInline
                                                 />
-                                            </svg>
-                                        </div>
-                                    )}
-
-                                    {/* Gradient Overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                            );
+                                        }
+                                        if (media?.kind === "image") {
+                                            return (
+                                                <Image
+                                                    src={media.src}
+                                                    alt={media.alt || category.name}
+                                                    fill
+                                                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                                />
+                                            );
+                                        }
+                                        return (
+                                            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+                                                <svg
+                                                    className="w-24 h-24 text-gray-300 dark:text-gray-600"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={1}
+                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        );
+                                    })()}
+                                
+                                {/* Gradient Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                 </div>
 
                                 {/* Content */}
