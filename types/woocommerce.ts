@@ -4,9 +4,9 @@ export interface ProductImage {
 }
 
 export interface ProductAttribute {
-  id?: number;
+  id: number;
   name: string; // "Color", "Tallas" o prefijado "pa_..."
-  slug?: string;
+  slug: string;
   options: string[];
   variation?: boolean;
 }
@@ -19,11 +19,13 @@ export interface Product {
   images: ProductImage[];
   attributes: ProductAttribute[];
   price_html?: string;
+  meta_data?: MetaData[];
 }
 
 export interface VariationAttribute {
   name: string; // "Color"/"Tallas" o prefijado "pa_..."
   option: string;
+  slug?: string;
 }
 
 export interface Variation {
@@ -31,4 +33,43 @@ export interface Variation {
   price?: string;
   image?: ProductImage | null;
   attributes: VariationAttribute[];
+  meta_data?: MetaData[];
+}
+
+export interface MetaData {
+  id: number;
+  key: string;
+  value: unknown;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parent: number;
+  description?: string;
+  image?: ProductImage | null;
+  count?: number;
+}
+
+export interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  count?: number;
+}
+
+export interface AttributeTerm {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  menu_order?: number;
+  count?: number;
+}
+
+export interface AttributeWithTerms {
+  attribute: ProductAttribute;
+  terms: AttributeTerm[];
 }

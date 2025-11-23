@@ -1,77 +1,77 @@
 // En lib/woocommerce.ts
-
-// ¡CRÍTICO! Esto garantiza que este código (y las llaves)
-// NUNCA se ejecuten en el navegador del cliente.
 import "server-only";
 
 import API from "@woocommerce/woocommerce-rest-api";
-import type { Variation } from "@/types/woocommerce";
+import type {
+  Variation,
+  Product,
+  Category,
+  Tag,
+  ProductAttribute,
+  AttributeTerm,
+  AttributeWithTerms
+} from "@/types/woocommerce";
 
 const api = new API({
   url: process.env.WOOCOMMERCE_API_URL || "",
   consumerKey: process.env.WOOCOMMERCE_CONSUMER_KEY || "",
   consumerSecret: process.env.WOOCOMMERCE_CONSUMER_SECRET || "",
-  version: "wc/v3", // Usamos la v3 de la API
+  version: "wc/v3",
 });
 
 export default api;
-
-// Alias por conveniencia si el código existente usa `wcApi`
 export const wcApi = api;
 
-// Tipo mínimo para variaciones (ajústese si se requiere más campos)
-// Tipado de Variation proviene de '@/types/woocommerce'
-
 /**
- * MACHETAZO 4.5:
- * Llave para traer las "hijas" (variaciones) de un producto "papá" (variable) por ID.
+ * Obtiene las variaciones de un producto por su ID.
  */
 export async function getProductVariations(productId: number): Promise<Variation[]> {
   try {
-    console.log(`[SAPRIX DEBUG] Pidiendo variaciones para ID: ${productId}`);
     const response = await api.get(`products/${productId}/variations`, {
-      per_page: 100, // Traemos todas las tallas/colores
+      per_page: 100,
     });
 
-    if ((response as any)?.status && (response as any)?.status !== 200) {
-      throw new Error(`Error en la API: ${(response as any)?.statusText}`);
+    if (response.status !== 200) {
+      throw new Error(`Error en la API: ${response.statusText}`);
     }
 
-    const data = (response as any)?.data ?? [];
-    console.log(`\[SAPRIX DEBUG] ¡Variaciones encontradas: ${Array.isArray(data) ? data.length : 0}!`);
+    const data = response.data ?? [];
     return data as Variation[];
-  } catch (error: any) {
-    console.error("¡ERROR BERRRACO trayendo variaciones!", error?.response?.data || error?.message || error);
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error(`Error obteniendo variaciones para producto ${productId}:`, errMsg);
     return [];
   }
 }
 
 // Traer producto por slug (primer resultado)
-export async function getProductBySlug(slug: string): Promise<any | null> {
+export async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
     const response = await api.get("products", { slug, per_page: 1 });
-    const items = (response as any)?.data ?? [];
+    const items = response.data ?? [];
     if (Array.isArray(items) && items.length > 0) {
-      return items[0];
+      return items[0] as Product;
     }
     return null;
-  } catch (error: any) {
-    console.error("¡ERROR BERRRACO trayendo producto por slug!", error?.response?.data || error?.message || error);
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error(`Error obteniendo producto por slug ${slug}:`, errMsg);
     return null;
   }
 }
 
-// Traer el producto más reciente (fallback para la página de referencia)
-export async function getLatestProduct(): Promise<any | null> {
+// Traer el producto más reciente
+export async function getLatestProduct(): Promise<Product | null> {
   try {
     const response = await api.get("products", { per_page: 1, order: "desc", orderby: "date" });
-    const items = (response as any)?.data ?? [];
+    const items = response.data ?? [];
     if (Array.isArray(items) && items.length > 0) {
-      return items[0];
+      return items[0] as Product;
     }
     return null;
-  } catch (error: any) {
-    console.error("¡ERROR BERRRACO trayendo el producto más reciente!", error?.response?.data || error?.message || error);
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error("Error obteniendo el producto más reciente:", errMsg);
     return null;
   }
 }
@@ -93,35 +93,40 @@ async function getMediaSourceUrl(mediaId: number): Promise<string | undefined> {
 
 /**
  * Extrae opciones de color directamente de las variaciones del producto.
- * Considera atributos con slug "pa_color" o nombre que contenga "color" (case-insensitive).
  */
 export async function getColorOptionsFromVariations(productId: number): Promise<Array<{ option: string; variations: number[]; image?: string }>> {
   const variations = await getProductVariations(productId);
   const byColor: Record<string, { option: string; variations: number[]; image?: string }> = {};
-  for (const v of variations as any[]) {
+
+  for (const v of variations) {
     const attrs = Array.isArray(v.attributes) ? v.attributes : [];
-    const colorAttr = attrs.find((a: any) => {
+    const colorAttr = attrs.find((a) => {
       const slug = (a.slug || a.name || "").toString().toLowerCase();
-      return slug.includes("color"); // matches pa_color or Color
+      return slug.includes("color") || slug.includes("pa_color");
     });
+
     const option = colorAttr?.option;
     if (!option) continue;
+
     const key = option.toString();
     if (!byColor[key]) {
-      byColor[key] = { option: key, variations: [], image: v?.image?.src || undefined };
+      byColor[key] = { option: key, variations: [], image: v.image?.src || undefined };
     }
+
     byColor[key].variations.push(v.id);
+
     // Preferir imagen de la variación
-    if (!byColor[key].image && v?.image?.src) {
+    if (!byColor[key].image && v.image?.src) {
       byColor[key].image = v.image.src;
     }
-    // Soporte para plugins de galería de variaciones vía meta_data (IDs de media)
-    if (!byColor[key].image && Array.isArray(v?.meta_data)) {
-      const meta = v.meta_data as Array<{ key: string; value: any }>;
-      const galleryMeta = meta.find((m) => ["woo_variation_gallery_images", "rtwpvg_images"].includes(m.key));
+
+    // Soporte para plugins de galería de variaciones vía meta_data
+    if (!byColor[key].image && Array.isArray(v.meta_data)) {
+      const galleryMeta = v.meta_data?.find((m) => ["woo_variation_gallery_images", "rtwpvg_images"].includes(m.key));
       const ids: number[] = Array.isArray(galleryMeta?.value)
-        ? galleryMeta!.value.map((x: any) => Number(x)).filter((n: number) => Number.isFinite(n))
+        ? (galleryMeta!.value as unknown[]).map((x) => Number(x)).filter((n: number) => Number.isFinite(n))
         : [];
+
       if (ids.length > 0) {
         const src = await getMediaSourceUrl(ids[0]);
         if (src) byColor[key].image = src;
@@ -133,19 +138,21 @@ export async function getColorOptionsFromVariations(productId: number): Promise<
 
 /**
  * Extrae opciones de talla directamente de las variaciones del producto.
- * Detecta atributos cuyo slug/nombre contenga "talla" o "size" (incluye pa_talla / pa_tallas).
  */
 export async function getSizeOptionsFromVariations(productId: number): Promise<Array<{ option: string; variations: number[] }>> {
   const variations = await getProductVariations(productId);
   const bySize: Record<string, { option: string; variations: number[] }> = {};
-  for (const v of variations as any[]) {
+
+  for (const v of variations) {
     const attrs = Array.isArray(v.attributes) ? v.attributes : [];
-    const sizeAttr = attrs.find((a: any) => {
+    const sizeAttr = attrs.find((a) => {
       const slug = (a.slug || a.name || "").toString().toLowerCase();
-      return slug.includes("talla") || slug.includes("size");
+      return slug.includes("talla") || slug.includes("size") || slug.includes("pa_talla");
     });
+
     const option = sizeAttr?.option;
     if (!option) continue;
+
     const key = option.toString();
     if (!bySize[key]) {
       bySize[key] = { option: key, variations: [] };
@@ -157,22 +164,23 @@ export async function getSizeOptionsFromVariations(productId: number): Promise<A
 
 // -------- Catálogo global: categorías, etiquetas y atributos --------
 
-// Helpers basados en fetch para aprovechar ISR y autenticación por query string
-function buildUrl(endpoint: string, params: Record<string, any> = {}): string {
+function buildUrl(endpoint: string, params: Record<string, unknown> = {}): string {
   const base = (process.env.WOOCOMMERCE_API_URL || "").replace(/\/$/, "");
   const ck = process.env.WOOCOMMERCE_CONSUMER_KEY || "";
   const cs = process.env.WOOCOMMERCE_CONSUMER_SECRET || "";
   const url = new URL(`${base}/wp-json/wc/v3/${endpoint}`);
+
   Object.entries(params || {}).forEach(([k, v]) => {
     if (v === undefined || v === null) return;
     url.searchParams.set(k, String(v));
   });
+
   url.searchParams.set("consumer_key", ck);
   url.searchParams.set("consumer_secret", cs);
   return url.toString();
 }
 
-async function wcFetchRaw<T = any>(endpoint: string, params: Record<string, any> = {}, revalidate = 600): Promise<{ data: T; headers: Headers }> {
+async function wcFetchRaw<T>(endpoint: string, params: Record<string, unknown> = {}, revalidate = 600): Promise<{ data: T; headers: Headers }> {
   const url = buildUrl(endpoint, params);
   const res = await fetch(url, { next: { revalidate } });
   if (!res.ok) {
@@ -182,10 +190,11 @@ async function wcFetchRaw<T = any>(endpoint: string, params: Record<string, any>
   return { data, headers: res.headers };
 }
 
-async function wcFetchAll<T = any>(endpoint: string, params: Record<string, any> = {}, revalidate = 600): Promise<T[]> {
+async function wcFetchAll<T>(endpoint: string, params: Record<string, unknown> = {}, revalidate = 600): Promise<T[]> {
   const first = await wcFetchRaw<T[]>(endpoint, { ...params, page: 1 }, revalidate);
   const totalPages = parseInt(first.headers.get("x-wp-totalpages") || "1");
   const all: T[] = Array.isArray(first.data) ? [...first.data] : [];
+
   for (let page = 2; page <= totalPages; page++) {
     const resp = await wcFetchRaw<T[]>(endpoint, { ...params, page }, revalidate);
     if (Array.isArray(resp.data)) all.push(...resp.data);
@@ -193,54 +202,57 @@ async function wcFetchAll<T = any>(endpoint: string, params: Record<string, any>
   return all;
 }
 
-async function paginate<T = any>(endpoint: string, params: Record<string, any> = {}): Promise<T[]> {
-  const all: T[] = [];
-  let page = 1;
-  const per_page = params.per_page ?? 100;
-  while (true) {
-    try {
-      const response = await api.get(endpoint, { ...params, per_page, page });
-      const data = (response as any)?.data ?? [];
-      if (!Array.isArray(data) || data.length === 0) break;
-      all.push(...data);
-      page += 1;
-      // Evitar bucles infinitos si el servidor limita duro
-      if (page > 50) break;
-    } catch (error: any) {
-      console.error(`[Catalog paginate] Error en ${endpoint}`, error?.response?.data || error?.message || error);
-      break;
-    }
+export async function getAllProductCategories(): Promise<Category[]> {
+  try {
+    return await wcFetchAll<Category>("products/categories", { per_page: 100 }, 600);
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return [];
   }
-  return all;
 }
 
-export async function getAllProductCategories(): Promise<any[]> {
-  return wcFetchAll<any>("products/categories", { per_page: 100 }, 600);
+export async function getAllProductTags(): Promise<Tag[]> {
+  try {
+    return await wcFetchAll<Tag>("products/tags", { per_page: 100 }, 600);
+  } catch (error) {
+    console.error("Error fetching tags:", error);
+    return [];
+  }
 }
 
-export async function getAllProductTags(): Promise<any[]> {
-  return wcFetchAll<any>("products/tags", { per_page: 100 }, 600);
+export async function getAllProductAttributes(): Promise<ProductAttribute[]> {
+  try {
+    return await wcFetchAll<ProductAttribute>("products/attributes", { per_page: 100 }, 600);
+  } catch (error) {
+    console.error("Error fetching attributes:", error);
+    return [];
+  }
 }
 
-export async function getAllProductAttributes(): Promise<any[]> {
-  return wcFetchAll<any>("products/attributes", { per_page: 100 }, 600);
+export async function getAttributeTerms(attributeId: number): Promise<AttributeTerm[]> {
+  try {
+    return await wcFetchAll<AttributeTerm>(`products/attributes/${attributeId}/terms`, { per_page: 100 }, 600);
+  } catch (error) {
+    console.error(`Error fetching terms for attribute ${attributeId}:`, error);
+    return [];
+  }
 }
 
-export async function getAttributeTerms(attributeId: number): Promise<any[]> {
-  return wcFetchAll<any>(`products/attributes/${attributeId}/terms`, { per_page: 100 }, 600);
+export async function getAllProductAttributesWithTerms(): Promise<AttributeWithTerms[]> {
+  try {
+    const attrs = await getAllProductAttributes();
+    const termsList = await Promise.all((attrs || []).map((a) => getAttributeTerms(Number(a.id))));
+    return attrs.map((a, idx) => ({ attribute: a, terms: termsList[idx] || [] }));
+  } catch (error) {
+    console.error("Error fetching attributes with terms:", error);
+    return [];
+  }
 }
 
-export async function getAllProductAttributesWithTerms(): Promise<Array<{ attribute: any; terms: any[] }>> {
-  const attrs = await getAllProductAttributes();
-  const termsList = await Promise.all((attrs || []).map((a: any) => getAttributeTerms(Number(a?.id))));
-  return attrs.map((a: any, idx: number) => ({ attribute: a, terms: termsList[idx] || [] }));
-}
-
-// Helper: traer datos del sidebar (categorías, tags y atributos con términos) en paralelo
 export async function getShopSidebarData(): Promise<{
-  categories: any[];
-  tags: any[];
-  attributes: Array<{ attribute: any; terms: any[] }>;
+  categories: Category[];
+  tags: Tag[];
+  attributes: AttributeWithTerms[];
 }> {
   const [categories, tags, attributes] = await Promise.all([
     getAllProductCategories(),

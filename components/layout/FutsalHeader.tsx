@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import SaprixLogo from "@/components/ui/SaprixLogo";
+import ThemeToggle from "@/components/ThemeToggle";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Popover } from "@headlessui/react";
@@ -13,6 +14,7 @@ import { FaMinusCircle } from "react-icons/fa";
 import { ChevronDown, List, Search, Flame, ShoppingCart, User, UserCircle, Truck, Package, HelpCircle, Trash2, X } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
+import { useTheme } from "next-themes"; // Importar useTheme
 
 // Paleta Saprix: fondo azul de marca, texto blanco en azules y hover rojo‑naranja
 const brand = {
@@ -23,46 +25,85 @@ const brand = {
   navText: "text-white",
 };
 
-// Categorías con paleta colorida (en español)
+// Categorías Saprix - Marca Colombiana de Zapatillas de Fútbol Sala
 const categories = [
-  { name: "Camisas Hombre", Icon: IoShirt, href: "/tienda?category=camisas-hombre", color: "#2500ff" },
-    { name: "Vestidos Mujer", Icon: GiTravelDress, href: "/tienda?category=vestidos-mujer", color: "#FF4500" },
-  { name: "Zapatillas Running", Icon: GiRunningShoe, href: "/tienda?category=zapatillas-running", color: "#00B341" },
-  { name: "Medias", Icon: GiSocks, href: "/tienda?category=medias", color: "#8A2BE2" },
-  { name: "Sala Clásicos", Icon: IoShirt, href: "/tienda?category=sala-classics", color: "#1E90FF" },
-  { name: "Velocidad", Icon: GiRunningShoe, href: "/tienda?category=velocidad", color: "#FF9500" },
-  { name: "Agarre", Icon: GiRunningShoe, href: "/tienda?category=agarre", color: "#00C2FF" },
-  { name: "Niños", Icon: IoShirt, href: "/tienda?category=ninos", color: "#FF3E7F" },
+  { name: "Sala Clásicos", Icon: GiRunningShoe, href: "/tienda?category=sala-clasicos", color: "#3B00FF", description: "Diseño tradicional, máxima comodidad" },
+  { name: "Velocidad", Icon: GiRunningShoe, href: "/tienda?category=velocidad", color: "#FF9500", description: "Ligereza y rapidez extrema" },
+  { name: "Agarre", Icon: GiRunningShoe, href: "/tienda?category=agarre", color: "#00C2FF", description: "Tracción superior en cancha" },
+  { name: "Niños", Icon: IoShirt, href: "/tienda?category=ninos", color: "#FF3E7F", description: "Diseñados para jóvenes talentos" },
+  { name: "Medias", Icon: GiSocks, href: "/tienda?category=medias", color: "#8A2BE2", description: "Complementa tu equipamiento" },
 ];
 
 const navItems = [
-  { name: "Hombre", href: "/tienda?hombre", submenu: [
-    { name: "Zapatillas Sala", href: "/tienda?hombre&cat=zapatillas" },
-    { name: "Ofertas", href: "/tienda?hombre&cat=ofertas" },
-  ]},
-  { name: "Mujer", href: "/tienda?mujer", submenu: [
-    { name: "Zapatillas Sala", href: "/tienda?mujer&cat=zapatillas" },
-    { name: "Ofertas", href: "/tienda?mujer&cat=ofertas" },
-  ]},
-  { name: "Niños", href: "/tienda?ninos", submenu: [
-    { name: "Zapatillas Sala", href: "/tienda?ninos&cat=zapatillas" },
-    { name: "Ofertas", href: "/tienda?ninos&cat=ofertas" },
-  ]},
+  {
+    name: "Hombre", href: "/tienda?hombre", submenu: [
+      { name: "Zapatillas Sala", href: "/tienda?hombre&cat=zapatillas" },
+      { name: "Ofertas", href: "/tienda?hombre&cat=ofertas" },
+    ]
+  },
+  {
+    name: "Mujer", href: "/tienda?mujer", submenu: [
+      { name: "Zapatillas Sala", href: "/tienda?mujer&cat=zapatillas" },
+      { name: "Ofertas", href: "/tienda?mujer&cat=ofertas" },
+    ]
+  },
+  {
+    name: "Niños", href: "/tienda?ninos", submenu: [
+      { name: "Zapatillas Sala", href: "/tienda?ninos&cat=zapatillas" },
+      { name: "Ofertas", href: "/tienda?ninos&cat=ofertas" },
+    ]
+  },
   { name: "Ofertas", href: "/ofertas" },
 ];
 
 export default function FutsalHeader() {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (searchQuery.trim().length >= 2) {
+        setIsSearching(true);
+        try {
+          const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&per_page=5`);
+          const data = await res.json();
+          setSearchResults(data.productos || []);
+          setShowResults(true);
+        } catch (error) {
+          console.error("Error searching:", error);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSearchResults([]);
+        setShowResults(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Close search on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowResults(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+  const [showCatMenu, setShowCatMenu] = useState(false);
+  const [selectedCat, setSelectedCat] = useState<{ name: string; slug: string } | null>(null);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
-  const [suggestions, setSuggestions] = useState<{
-    productos: Array<{ slug: string; nombre: string; imagen: string; precio: string }>;
-    categorias: Array<{ nombre: string; slug: string; count: number }>;
-    paginas: Array<{ nombre: string; href: string }>;
-  }>({ productos: [], categorias: [], paginas: [] });
-  const [loadingSug, setLoadingSug] = useState(false);
-  const [showSug, setShowSug] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const accountBtnRef = useRef<HTMLButtonElement | null>(null);
   const [hoverNav, setHoverNav] = useState<string | null>(null);
@@ -73,53 +114,36 @@ export default function FutsalHeader() {
       const cc = parseInt(localStorage.getItem("cartCount") || "0");
       setWishlistCount(isNaN(wc) ? 0 : wc);
       setCartCount(isNaN(cc) ? 0 : cc);
-    } catch {}
+    } catch { }
     const handler = (e: StorageEvent) => {
       if (e.key === "wishlistCount") setWishlistCount(parseInt(e.newValue || "0") || 0);
       if (e.key === "cartCount") setCartCount(parseInt(e.newValue || "0") || 0);
     };
     window.addEventListener("storage", handler);
+    setMounted(true); // Marcar como montado
     return () => window.removeEventListener("storage", handler);
   }, []);
 
-  // Autocompletado con debounce
   useEffect(() => {
-    const q = searchQuery.trim();
-    if (q.length < 2) {
-      setSuggestions({ productos: [], categorias: [], paginas: [] });
-      setLoadingSug(false);
-      return;
-    }
-    setLoadingSug(true);
-    const ctrl = new AbortController();
-    const t = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&per_page=6`, { signal: ctrl.signal });
-        const json = await res.json();
-        setSuggestions({
-          productos: Array.isArray(json?.productos) ? json.productos : [],
-          categorias: Array.isArray(json?.categorias) ? json.categorias : [],
-          paginas: Array.isArray(json?.paginas) ? json.paginas : [],
-        });
-      } catch {
-        // Ignorar errores/abort
-      } finally {
-        setLoadingSug(false);
-        setShowSug(true);
+    function onDocClick(e: MouseEvent) {
+      const el = wrapRef.current;
+      if (!el) return;
+      if (!el.contains(e.target as Node)) {
+        setShowCatMenu(false);
       }
-    }, 250);
-    return () => {
-      clearTimeout(t);
-      ctrl.abort();
-    };
-  }, [searchQuery]);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+
 
   // Cerrar panel al hacer clic fuera
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       const t = e.target as Node;
       if (wrapRef.current && !wrapRef.current.contains(t)) {
-        setShowSug(false);
+        // setShowSug(false); // Eliminado
       }
     };
     document.addEventListener("mousedown", handler);
@@ -138,257 +162,499 @@ export default function FutsalHeader() {
   }, []);
 
   return (
-    <header className="hidden lg:block sticky top-0 z-50">
-      {/* Barra superior: blanca + buscador + soporte (Saprix) */}
-      <div className={`${brand.topBg} ${brand.topText}`}>
-        <div className="container mx-auto max-w-7xl px-6 py-4">
-          <div className="grid grid-cols-12 items-center gap-4">
-            {/* Logo Saprix (retina) */}
-            <div className="col-span-3">
-              <Link href="/" className="inline-flex items-center gap-3" aria-label="Inicio Saprix">
-                {/* Fondo blanco => logo normal azul (aumentado 25%) */}
-                <SaprixLogo bg="light" retina width={200} height={50} />
-              </Link>
+
+    <header className="sticky top-0 z-50">
+      {/* Topbar Mobile - Marquee */}
+      {/* Topbar Mobile - Marquee (Visible en Desktop también por solicitud) */}
+      <motion.div
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="bg-gray-900 text-white overflow-hidden py-2.5 relative z-50 border-b border-gray-800 shadow-sm"
+      >
+        <style jsx>{`
+          @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .animate-marquee {
+            display: flex;
+            width: max-content;
+            animation: marquee 25s linear infinite;
+          }
+          .animate-marquee:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
+        <div className="animate-marquee whitespace-nowrap flex items-center gap-12 text-[11px] font-bold tracking-widest uppercase">
+          {/* Contenido duplicado para loop infinito */}
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex items-center gap-12">
+              <span className="flex items-center gap-2">
+                <span className="text-saprix-electric-blue text-base">🏪</span>
+                <span>Tiendas: Bogotá • Medellín • Cúcuta</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="text-yellow-400 text-base">🛡️</span>
+                <span>Garantía de 30 días</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="text-green-400 text-base">🚚</span>
+                <span>Envíos Gratis {'>'} $150.000</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="text-blue-400 text-base">💳</span>
+                <span>Pagos: Nequi • Bancolombia • Addi</span>
+              </span>
             </div>
+          ))}
+        </div>
+      </motion.div>
 
-            {/* Búsqueda tipo 'Todas las categorías' */}
-            <div className="col-span-6 relative" ref={wrapRef}>
-              <form
-                role="search"
-                aria-label="Buscar"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const q = searchQuery.trim();
-                  router.push(q ? `/tienda?q=${encodeURIComponent(q)}` : "/tienda");
-                }}
-              >
-                <div className="flex w-full items-center rounded-full border border-gray-300 bg-white px-2 py-1 shadow-sm">
-                  <button type="button" className="flex items-center gap-2 rounded-full px-3 py-2 text-sm text-gray-900 hover:bg-gray-50">
-                    <span className="font-semibold">Todas las categorías</span>
-                    <ChevronDown size={16} className="text-saprix-red-orange" />
-                  </button>
-                  <span className="mx-2 h-6 w-px bg-gray-300" />
-                  <input
-                    type="text"
-                    name="q"
-                    placeholder="Buscar productos"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setShowSug(true)}
-                    className="h-10 flex-1 border-none bg-transparent px-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
-                  />
-                  <span className="inline-flex h-10 w-10 items-center justify-center">
-                    <Search size={18} className="text-saprix-red-orange" />
-                  </span>
-                </div>
-              </form>
+      <div className="hidden lg:block">
+        {/* Barra superior: blanca + buscador + soporte (Saprix) */}
+        <div className={`${brand.topBg} ${brand.topText}`}>
+          <div className="container mx-auto max-w-7xl px-6 py-4">
+            <div className="grid grid-cols-12 items-center gap-4">
+              {/* Logo Saprix (retina) */}
+              <div className="col-span-3">
+                <Link href="/" className="inline-flex items-center gap-3" aria-label="Inicio Saprix">
+                  {/* Fondo blanco => logo normal azul (aumentado 25%) */}
+                  <SaprixLogo bg="light" retina width={200} height={50} />
+                </Link>
+              </div>
 
-              {/* Panel de sugerencias */}
-              <AnimatePresence>
-                {showSug && (suggestions.productos.length + suggestions.categorias.length + suggestions.paginas.length) > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-lg bg-white shadow-xl"
+              {/* Búsqueda tipo 'Todas las categorías' */}
+              <div className="col-span-6 relative" ref={wrapRef}>
+                <div ref={searchRef} className="relative w-full">
+                  <form
+                    role="search"
+                    aria-label="Buscar"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const q = searchQuery.trim();
+                      const base = new URL(q ? `/tienda?q=${encodeURIComponent(q)}` : "/tienda", window.location.origin);
+                      router.push(base.pathname + base.search);
+                      setShowResults(false);
+                    }}
                   >
-                    <div className="max-h-80 overflow-auto">
-                      {/* Productos */}
-                      <div>
-                        <div className="px-3 pt-3 text-xs font-semibold text-gray-500">Productos</div>
-                        <ul className="divide-y divide-gray-100">
-                          {suggestions.productos.length === 0 && (
-                            <li className="p-3 text-sm text-gray-500">Sin productos para “{searchQuery}”.</li>
-                          )}
-                          {suggestions.productos.map((s) => (
-                            <li key={`prod-${s.slug}`} className="hover:bg-gray-50">
-                              <Link href={`/producto/${s.slug}`} className="flex items-center gap-3 px-3 py-2" onClick={() => setShowSug(false)}>
-                                <img src={s.imagen} alt={s.nombre} className="h-8 w-8 rounded object-cover" />
-                                <div className="flex-1">
-                                  <p className="text-sm font-semibold text-gray-900">{s.nombre}</p>
-                                  {s.precio ? (
-                                    <p className="text-xs text-gray-500">{moneyFmt.format(Number(s.precio))}</p>
-                                  ) : null}
-                                </div>
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      {/* Categorías */}
-                      <div>
-                        <div className="px-3 pt-3 text-xs font-semibold text-gray-500">Categorías</div>
-                        <ul className="divide-y divide-gray-100">
-                          {suggestions.categorias.length === 0 && (
-                            <li className="p-3 text-sm text-gray-500">Sin categorías para “{searchQuery}”.</li>
-                          )}
-                          {suggestions.categorias.map((c) => (
-                            <li key={`cat-${c.slug}`} className="hover:bg-gray-50">
-                              <Link href={`/tienda?category=${encodeURIComponent(c.slug)}`} className="flex items-center gap-3 px-3 py-2" onClick={() => setShowSug(false)}>
-                                <div className="flex h-8 w-8 items-center justify-center rounded bg-gray-100 text-sm text-gray-600">#</div>
-                                <div className="flex-1">
-                                  <p className="text-sm font-semibold text-gray-900">{c.nombre}</p>
-                                  {typeof c.count === "number" && (
-                                    <p className="text-xs text-gray-500">{c.count} productos</p>
+                    <div className="group flex w-full items-center rounded-full border border-gray-200 bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700 px-4 py-2 transition-all duration-300 focus-within:bg-white dark:focus-within:bg-gray-900 focus-within:border-saprix-electric-blue focus-within:ring-4 focus-within:ring-saprix-electric-blue/10 shadow-sm hover:shadow-md">
+                      <Search size={18} className="text-gray-400 group-focus-within:text-saprix-electric-blue transition-colors" />
+                      <input
+                        type="text"
+                        name="q"
+                        placeholder="Buscar productos..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => {
+                          if (searchResults.length > 0) setShowResults(true);
+                        }}
+                        className="h-9 flex-1 border-none bg-transparent px-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none font-medium"
+                        autoComplete="off"
+                      />
+                      {isSearching ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-saprix-electric-blue"></div>
+                      ) : searchQuery && (
+                        <button type="button" onClick={() => { setSearchQuery(""); setSearchResults([]); }} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </form>
+
+                  {/* Resultados de búsqueda en vivo */}
+                  <AnimatePresence>
+                    {showResults && searchResults.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden z-[60]"
+                      >
+                        <div className="p-2">
+                          <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-3 py-2">Resultados</h3>
+                          {searchResults.map((product) => (
+                            <Link
+                              key={product.id}
+                              href={`/producto/${product.slug}`}
+                              onClick={() => setShowResults(false)}
+                              className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+                            >
+                              <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-gray-800 overflow-hidden shrink-0 border border-gray-200 dark:border-gray-700">
+                                {product.images?.[0]?.src ? (
+                                  <img src={product.images[0].src} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                    <Package size={20} />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-bold text-gray-900 dark:text-white truncate group-hover:text-saprix-electric-blue transition-colors">
+                                  {product.name}
+                                </h4>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-xs font-bold text-gray-900 dark:text-white">
+                                    {moneyFmt.format(Number(product.price || 0))}
+                                  </span>
+                                  {product.regular_price && product.price < product.regular_price && (
+                                    <span className="text-[10px] text-gray-400 line-through">
+                                      {moneyFmt.format(Number(product.regular_price))}
+                                    </span>
                                   )}
                                 </div>
-                              </Link>
-                            </li>
+                              </div>
+                              <ChevronDown className="w-4 h-4 text-gray-300 -rotate-90 opacity-0 group-hover:opacity-100 transition-all" />
+                            </Link>
                           ))}
-                        </ul>
-                      </div>
-                      {/* Páginas */}
-                      <div>
-                        <div className="px-3 pt-3 text-xs font-semibold text-gray-500">Páginas</div>
-                        <ul className="divide-y divide-gray-100">
-                          {suggestions.paginas.length === 0 && (
-                            <li className="p-3 text-sm text-gray-500">Sin páginas para “{searchQuery}”.</li>
-                          )}
-                          {suggestions.paginas.map((p, idx) => (
-                            <li key={`page-${idx}`} className="hover:bg-gray-50">
-                              <Link href={p.href} className="flex items-center gap-3 px-3 py-2" onClick={() => setShowSug(false)}>
-                                <div className="flex h-8 w-8 items-center justify-center rounded bg-gray-100 text-sm text-gray-600">📄</div>
-                                <div className="flex-1">
-                                  <p className="text-sm font-semibold text-gray-900">{p.nombre}</p>
-                                </div>
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                    <div className="border-t p-2 text-right">
-                      <Link href={`/tienda?q=${encodeURIComponent(searchQuery.trim())}`} className="text-sm font-semibold text-saprix-red-orange hover:underline">
-                        Ver todos los resultados
-                      </Link>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              {showSug && loadingSug && (
-                <div className="absolute left-0 right-0 mt-2 rounded-md bg-white p-3 text-sm text-gray-500 shadow">
-                  Buscando…
+                          <Link
+                            href={`/tienda?q=${encodeURIComponent(searchQuery)}`}
+                            onClick={() => setShowResults(false)}
+                            className="block mt-2 text-center text-xs font-bold text-saprix-electric-blue hover:underline py-2 border-t border-gray-100 dark:border-gray-800"
+                          >
+                            Ver todos los resultados ({searchResults.length}+)
+                          </Link>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-              )}
-            </div>
 
-            {/* Soporte 24/7 + Cuenta */}
-            <div className="col-span-3">
-              <div className="flex items-center justify-end gap-3">
-                <div>
-                  <span className="block text-xs font-semibold text-gray-500">Soporte 24/7</span>
-                  <p className="font-bold text-gray-900">+57 304 3136608</p>
-                </div>
-                {/* Cuenta en barra blanca con Popover (hover) */}
-                <Popover className="relative">
-                  {({ open }) => (
-                    <div
-                      onMouseEnter={() => { if (!open) accountBtnRef.current?.click(); }}
-                      onMouseLeave={() => { if (open) accountBtnRef.current?.click(); }}
+                {/* Eliminado menú de categorías del search para diseño más limpio */}
+
+
+              </div>
+
+              {/* Soporte 24/7 + Theme Toggle + Cuenta */}
+              <div className="col-span-3">
+                <div className="flex items-center justify-end gap-4">
+                  {/* Theme Toggle Pro */}
+                  {mounted && (
+                    <button
+                      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
                     >
-                      <Popover.Button
-                        ref={accountBtnRef}
-                        as={motion.button}
-                        whileHover={{ scale: 1.05 }}
-                        aria-label="Cuenta"
-                        className="rounded-full border border-gray-300 bg-white p-2 text-saprix-electric-blue hover:border-saprix-electric-blue"
-                      >
-                        <User size={18} className="text-saprix-electric-blue" />
-                      </Popover.Button>
-                      <AnimatePresence>
-                        {open && (
-                          <Popover.Panel static className="absolute right-0 z-50 mt-3 w-64 sm:w-72 md:w-80 max-w-[90vw] overflow-hidden rounded-xl bg-white shadow-lg">
-                            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.15 }} className="p-3">
-                              <button className="mb-3 w-full rounded-md bg-yellow-400 px-4 py-2 text-sm font-semibold text-gray-900 shadow hover:bg-yellow-500">
-                                Ingresar o Registrarse
-                              </button>
-                              <ul className="divide-y divide-gray-100 text-sm text-gray-800">
-                                <li>
-                                  <Link href="/cuenta/seguimiento" className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50">
-                                    <Truck size={16} className="text-saprix-electric-blue" /> Rastrear tu pedido
-                                  </Link>
-                                </li>
-                                <li>
-                                  <Link href="/cuenta/pedidos" className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50">
-                                    <Package size={16} className="text-saprix-electric-blue" /> Mis pedidos
-                                  </Link>
-                                </li>
-                                <li>
-                                  <Link href="/cuenta/perfil" className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50">
-                                    <UserCircle size={16} className="text-saprix-electric-blue" /> Mi perfil
-                                  </Link>
-                                </li>
-                                <li>
-                                  <Link href="/ayuda" className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50">
-                                    <HelpCircle size={16} className="text-saprix-electric-blue" /> Ayuda y Preguntas frecuentes
-                                  </Link>
-                                </li>
-                              </ul>
-                            </motion.div>
-                          </Popover.Panel>
-                        )}
-                      </AnimatePresence>
-                    </div>
+                      <div className="relative w-8 h-4 bg-gray-300 dark:bg-gray-600 rounded-full p-0.5">
+                        <motion.div
+                          className="w-3 h-3 bg-white rounded-full shadow-sm"
+                          animate={{ x: theme === 'dark' ? 16 : 0 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300">
+                        {theme === 'dark' ? 'Oscuro' : 'Blanco'}
+                      </span>
+                    </button>
                   )}
-                </Popover>
+
+                  {/* Cuenta Pro */}
+                  <Popover className="relative">
+                    {({ open }) => (
+                      <div
+                        onMouseEnter={() => { if (!open) accountBtnRef.current?.click(); }}
+                        onMouseLeave={() => { if (open) accountBtnRef.current?.click(); }}
+                      >
+                        <Popover.Button
+                          ref={accountBtnRef}
+                          as={motion.button}
+                          whileHover={{ scale: 1.05 }}
+                          aria-label="Cuenta"
+                          className={`flex items-center gap-2 rounded-full border p-1.5 pr-3 transition-all ${open
+                            ? 'border-saprix-electric-blue bg-saprix-electric-blue/5 text-saprix-electric-blue'
+                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                            }`}
+                        >
+                          <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
+                            <User size={16} className="text-gray-600" />
+                          </div>
+                          <span className="text-xs font-bold">Mi Cuenta</span>
+                          <ChevronDown size={12} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+                        </Popover.Button>
+
+                        <AnimatePresence>
+                          {open && (
+                            <Popover.Panel static className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-2xl ring-1 ring-black/5">
+                              <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.15 }}
+                                className="p-1"
+                              >
+                                <div className="p-3 border-b border-gray-100 dark:border-gray-800 mb-1">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Bienvenido</p>
+                                  <button className="w-full rounded-lg bg-saprix-electric-blue text-white px-4 py-2 text-xs font-bold uppercase tracking-wider shadow-md hover:bg-blue-700 transition-colors">
+                                    Iniciar Sesión
+                                  </button>
+                                </div>
+                                <div className="p-1">
+                                  <Link href="/cuenta/seguimiento" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+                                    <div className="w-8 h-8 rounded-md bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
+                                      <Truck size={16} />
+                                    </div>
+                                    <div>
+                                      <span className="block text-sm font-bold text-gray-900 dark:text-white">Rastrear</span>
+                                      <span className="block text-[10px] text-gray-500">Tu pedido en tiempo real</span>
+                                    </div>
+                                  </Link>
+                                  <Link href="/cuenta/pedidos" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+                                    <div className="w-8 h-8 rounded-md bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 transition-colors">
+                                      <Package size={16} />
+                                    </div>
+                                    <div>
+                                      <span className="block text-sm font-bold text-gray-900 dark:text-white">Mis Pedidos</span>
+                                      <span className="block text-[10px] text-gray-500">Historial de compras</span>
+                                    </div>
+                                  </Link>
+                                  <Link href="/ayuda" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+                                    <div className="w-8 h-8 rounded-md bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400 group-hover:bg-green-100 dark:group-hover:bg-green-900/30 transition-colors">
+                                      <HelpCircle size={16} />
+                                    </div>
+                                    <div>
+                                      <span className="block text-sm font-bold text-gray-900 dark:text-white">Ayuda</span>
+                                      <span className="block text-[10px] text-gray-500">Centro de soporte</span>
+                                    </div>
+                                  </Link>
+                                </div>
+                              </motion.div>
+                            </Popover.Panel>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
+                  </Popover>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
+
       {/* Barra inferior: azul de marca + navegación en blanco y botón de categorías blanco */}
-      <div className={`${brand.bottomBg}`}>
+      <div className={`${brand.bottomBg} shadow-lg relative z-40`}>
         <div className="container mx-auto max-w-7xl px-6">
-          <div className="flex h-16 items-center justify-between">
-            {/* Botón Products Category */}
-            <Popover className="relative">
-              {({ open }) => (
-                <>
-                  <Popover.Button as={motion.button}
-                    whileHover={{ scale: 1.05 }}
-                    className="flex shrink-0 items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-md hover:shadow-lg md:px-4 md:text-base"
-                  >
-                    <List size={18} className="text-saprix-red-orange" />
-                    <span>Categorías de productos</span>
-                    <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                      <ChevronDown size={16} className="text-saprix-red-orange" />
-                    </motion.span>
-                  </Popover.Button>
-                  <AnimatePresence>
-                    {open && (
-                      <Popover.Panel
-                        static
-                        className="absolute left-0 z-50 mt-3 w-[860px] overflow-hidden rounded-lg bg-white text-gray-900 shadow-xl"
-                      >
-                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="p-6">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          {categories.map(({ name, Icon, href, color }) => (
-                            <Link key={name} href={href} className="block">
-                              <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                className="flex items-center gap-3 rounded-lg bg-white p-4 shadow-md hover:shadow-lg"
+          <div className="flex h-16 items-center justify-between gap-4">
+            {/* Logo Mobile */}
+            <div className="lg:hidden shrink-0">
+              <Link href="/">
+                <SaprixLogo bg="dark" width={120} height={30} />
+              </Link>
+            </div>
+
+            {/* Botón Products Category - Desktop Only */}
+            <div className="hidden lg:block">
+              <Popover className="relative">
+                {({ open }) => (
+                  <>
+                    <Popover.Button as={motion.button}
+                      whileHover={{ scale: 1.05 }}
+                      className="flex shrink-0 items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-md hover:shadow-lg md:px-4 md:text-base"
+                    >
+                      <List size={18} className="text-saprix-red-orange" />
+                      <span>Categorías de productos</span>
+                      <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                        <ChevronDown size={16} className="text-saprix-red-orange" />
+                      </motion.span>
+                    </Popover.Button>
+                    <AnimatePresence>
+                      {open && (
+                        <Popover.Panel
+                          static
+                          className="fixed left-0 right-0 z-50 mt-1 overflow-hidden bg-white dark:bg-gray-900/98 dark:backdrop-blur-xl border-t border-gray-100 dark:border-white/10 shadow-2xl"
+                        >
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="container mx-auto px-6 py-6"
+                          >
+                            {/* Header del megamenu - Compacto pero con identidad */}
+                            <div className="mb-5 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                              <div>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-tight flex items-center gap-2">
+                                  Zapatillas Saprix
+                                  <span className="px-2 py-0.5 bg-saprix-electric-blue/10 text-saprix-electric-blue dark:text-saprix-lime text-[10px] font-bold rounded uppercase tracking-wider">
+                                    Originales
+                                  </span>
+                                </h3>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  Marca colombiana especializada en Fútbol Sala - Microfútbol
+                                </p>
+                              </div>
+                              <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-gray-900 to-gray-800 dark:from-white dark:to-gray-200 text-white dark:text-gray-900 text-[10px] font-bold tracking-wider rounded shadow-sm uppercase">
+                                <span>🇨🇴</span> Hecho en Colombia
+                              </span>
+                            </div>
+
+                            {/* Grid de 3 columnas - Compacto */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                              {/* Columna 1: Categorías - Iconos con fondo (Estilo anterior) pero compactos */}
+                              <div className="space-y-3">
+                                <h4 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
+                                  Categorías
+                                </h4>
+                                <div className="grid grid-cols-1 gap-2">
+                                  {categories.map(({ name, Icon, href, color, description }, idx) => (
+                                    <Link key={name} href={href}>
+                                      <div className="group flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-transparent hover:border-gray-100 dark:hover:border-gray-700">
+                                        {/* Icono con fondo de color suave */}
+                                        <div
+                                          className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-105"
+                                          style={{ backgroundColor: `${color}15` }}
+                                        >
+                                          <Icon className="w-4.5 h-4.5" style={{ color }} />
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-sm font-bold text-gray-800 dark:text-gray-200 group-hover:text-saprix-electric-blue dark:group-hover:text-saprix-lime transition-colors">
+                                              {name}
+                                            </span>
+                                            {idx < 2 && (
+                                              <span className="px-1.5 py-0.5 bg-saprix-electric-blue text-white text-[9px] font-bold rounded-[3px] uppercase shadow-sm">
+                                                Nuevo
+                                              </span>
+                                            )}
+                                          </div>
+                                          <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-1 font-medium">
+                                            {description}
+                                          </p>
+                                        </div>
+                                        <ChevronDown className="w-3 h-3 text-gray-300 group-hover:text-saprix-electric-blue dark:group-hover:text-saprix-lime -rotate-90 opacity-0 group-hover:opacity-100 transition-all" />
+                                      </div>
+                                    </Link>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Columna 2: Destacados - Banner vibrante pero compacto */}
+                              <div className="space-y-3">
+                                <h4 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
+                                  Destacados
+                                </h4>
+
+                                {/* Banner principal - Gradiente Saprix */}
+                                <Link href="/tienda?featured=true" className="group block mb-3">
+                                  <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-saprix-electric-blue to-blue-700 p-5 text-white shadow-lg shadow-saprix-electric-blue/20 group-hover:shadow-saprix-electric-blue/30 transition-all">
+                                    <div className="relative z-10">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <span className="px-2 py-0.5 bg-white/20 text-white text-[9px] font-bold rounded uppercase backdrop-blur-sm border border-white/10">
+                                          ⚡ Más Vendido
+                                        </span>
+                                      </div>
+                                      <h5 className="text-lg font-bold mb-1">Colección 2025</h5>
+                                      <p className="text-xs text-blue-100 mb-3 line-clamp-1 font-medium">
+                                        Tecnología de punta para campeones
+                                      </p>
+                                      <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider bg-white/10 px-3 py-1.5 rounded-full group-hover:bg-white/20 transition-colors">
+                                        Ver colección
+                                        <ChevronDown className="w-3 h-3 -rotate-90" />
+                                      </div>
+                                    </div>
+                                    {/* Patrones decorativos sutiles */}
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl"></div>
+                                    <div className="absolute bottom-0 left-0 w-20 h-20 bg-saprix-lime/20 rounded-full -ml-8 -mb-8 blur-xl"></div>
+                                  </div>
+                                </Link>
+
+                                {/* Mini links - Cards con borde sutil */}
+                                <div className="grid grid-cols-2 gap-3">
+                                  <Link href="/tienda?sale=true" className="group">
+                                    <div className="p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50/50 dark:hover:bg-red-900/10 transition-all">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Flame className="w-4 h-4 text-red-500" />
+                                        <span className="text-xs font-bold text-gray-900 dark:text-white">Ofertas</span>
+                                      </div>
+                                      <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Hasta 40% off</p>
+                                    </div>
+                                  </Link>
+                                  <Link href="/tienda?new=true" className="group">
+                                    <div className="p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-saprix-lime/50 hover:bg-saprix-lime/5 transition-all">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Package className="w-4 h-4 text-saprix-electric-blue dark:text-saprix-lime" />
+                                        <span className="text-xs font-bold text-gray-900 dark:text-white">Novedades</span>
+                                      </div>
+                                      <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Lo último</p>
+                                    </div>
+                                  </Link>
+                                </div>
+                              </div>
+
+                              {/* Columna 3: Recursos - Iconos destacados */}
+                              <div className="space-y-3">
+                                <h4 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
+                                  Ayuda
+                                </h4>
+                                <div className="space-y-1">
+                                  <Link href="/guia-tallas" className="group flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+                                    <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-gray-700 shadow-sm transition-colors">
+                                      <span className="text-sm">📏</span>
+                                    </div>
+                                    <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white font-medium">Guía de tallas</span>
+                                  </Link>
+                                  <Link href="/cuidado" className="group flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+                                    <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-gray-700 shadow-sm transition-colors">
+                                      <HelpCircle className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                    </div>
+                                    <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white font-medium">Cuidado del producto</span>
+                                  </Link>
+                                  <a href="https://wa.me/573043136608" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-3 p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-all">
+                                    <div className="w-8 h-8 rounded-md bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-900/50 shadow-sm transition-colors">
+                                      <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                                      </svg>
+                                    </div>
+                                    <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white font-medium">Chat WhatsApp</span>
+                                  </a>
+                                </div>
+
+                                {/* Envío gratis - Badge elegante */}
+                                <div className="mt-2 p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/50 border border-gray-200 dark:border-gray-700 flex items-center gap-3">
+                                  <div className="p-1.5 bg-white dark:bg-gray-700 rounded-full shadow-sm">
+                                    <Truck className="w-3.5 h-3.5 text-gray-700 dark:text-gray-300" />
+                                  </div>
+                                  <div>
+                                    <h5 className="text-xs font-bold text-gray-900 dark:text-white">Envío Gratis</h5>
+                                    <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                                      Por compras &gt; $150.000
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Footer con CTA - Elegante */}
+                            <div className="mt-5 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                              <div className="flex items-center gap-4 text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500">
+                                <span className="flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                                  100% Original
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                                  Garantía
+                                </span>
+                              </div>
+                              <Link
+                                href="/tienda"
+                                className="group inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold rounded-full hover:bg-saprix-electric-blue dark:hover:bg-saprix-lime hover:text-white dark:hover:text-black transition-all duration-300 shadow-md hover:shadow-lg"
                               >
-                                <Icon className="h-6 w-6" color={color} />
-                                <span className="text-sm font-semibold text-gray-900">{name}</span>
-                              </motion.div>
-                            </Link>
-                          ))}
-                        </div>
-                        <div className="mt-6 flex justify-end">
-                          <Link href="/tienda/categorias" className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold text-saprix-red-orange hover:bg-saprix-red-orange/10">
-                            <FaMinusCircle className="h-4 w-4 text-saprix-red-orange" />
-                            <span>Ver más…</span>
-                          </Link>
-                        </div>
-                        </motion.div>
-                      </Popover.Panel>
-                    )}
-                  </AnimatePresence>
-                </>
-              )}
-            </Popover>
+                                Ver catálogo completo
+                                <svg className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                              </Link>
+                            </div>
+                          </motion.div>
+                        </Popover.Panel>
+                      )}
+                    </AnimatePresence>
+                  </>
+                )}
+              </Popover>
+            </div>
 
             {/* Separador vertical sobre azul */}
             <span className="hidden lg:block h-6 w-px bg-white/40" />
@@ -447,7 +713,7 @@ export default function FutsalHeader() {
                       try {
                         const raw = localStorage.getItem("cartItems") || "[]";
                         items = JSON.parse(raw);
-                      } catch {}
+                      } catch { }
                       if (!items || items.length === 0) {
                         items = [
                           { slug: "ejemplo-1", nombre: "Producto de ejemplo", imagen: "/placeholder-image.png", precio: 94000 },
@@ -543,6 +809,6 @@ export default function FutsalHeader() {
       </div>
 
       {/* Menú Mobile: ahora gestionado por Sheet (shadcn/ui) con side="right" */}
-    </header>
+    </header >
   );
 }
