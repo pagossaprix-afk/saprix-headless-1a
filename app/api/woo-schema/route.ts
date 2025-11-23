@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import api from "@/lib/woocommerce";
+import { getWooApi } from "@/lib/woocommerce";
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
@@ -41,7 +41,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Invalid resource" }, { status: 400 });
     }
 
-    const response = await api.get(resource, { per_page: perPage });
+    const response = await getWooApi().get(resource, { per_page: perPage });
     const data = response.data || [];
     const sample = Array.isArray(data) ? data[0] : data;
     if (!sample) {

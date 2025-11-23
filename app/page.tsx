@@ -6,13 +6,12 @@ import BrandStory from '@/components/home/BrandStory';
 import StatsSection from '@/components/home/StatsSection';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
 import InstagramFeed from '@/components/home/InstagramFeed';
-import { getAllProductCategories } from '@/lib/woocommerce';
-import api from '@/lib/woocommerce';
+import { getAllProductCategories, getWooApi } from '@/lib/woocommerce';
 
 async function getHeroProducts() {
   try {
     // Obtener productos destacados para el slider (mínimo 3, máximo 5)
-    const response = await api.get('products', {
+    const response = await getWooApi().get('products', {
       per_page: 5,
       featured: true,
       status: 'publish',
@@ -24,7 +23,7 @@ async function getHeroProducts() {
     }
 
     // Si no hay suficientes productos destacados, obtener los más recientes
-    const fallbackResponse = await api.get('products', {
+    const fallbackResponse = await getWooApi().get('products', {
       per_page: 5,
       orderby: 'date',
       order: 'desc',
@@ -41,7 +40,7 @@ async function getHeroProducts() {
 
 async function getFeaturedProducts() {
   try {
-    const response = await api.get('products', {
+    const response = await getWooApi().get('products', {
       per_page: 6,
       featured: true,
       status: 'publish',
@@ -53,7 +52,7 @@ async function getFeaturedProducts() {
     }
 
     // Si no hay productos destacados, obtener los más recientes
-    const fallbackResponse = await api.get('products', {
+    const fallbackResponse = await getWooApi().get('products', {
       per_page: 6,
       orderby: 'date',
       order: 'desc',

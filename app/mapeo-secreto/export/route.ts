@@ -1,4 +1,4 @@
-import api from "@/lib/woocommerce";
+import { getWooApi } from "@/lib/woocommerce";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -23,13 +23,13 @@ export async function GET(req: Request) {
     if (search) baseParams.search = search;
 
     // Primera llamada para obtener total de páginas
-    const first = await api.get("products", baseParams);
+    const first = await getWooApi().get("products", baseParams);
     const totalPages = parseInt(first.headers?.["x-wp-totalpages"] ?? "1");
     const allProducts: any[] = Array.isArray(first.data) ? [...first.data] : [];
 
     // Traer el resto de páginas (si las hay)
     for (let page = 2; page <= totalPages; page++) {
-      const resp = await api.get("products", { ...baseParams, page });
+      const resp = await getWooApi().get("products", { ...baseParams, page });
       if (Array.isArray(resp.data)) {
         allProducts.push(...resp.data);
       }

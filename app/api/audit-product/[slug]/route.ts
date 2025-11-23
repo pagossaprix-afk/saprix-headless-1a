@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import api from '@/lib/woocommerce';
+import { getWooApi } from '@/lib/woocommerce';
 
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
@@ -19,7 +19,7 @@ export async function GET(
       return NextResponse.json({ error: 'Missing slug param' }, { status: 400 });
     }
 
-    const productResponse = await api.get('products', {
+    const productResponse = await getWooApi().get('products', {
       slug,
       per_page: 1,
     });
@@ -32,7 +32,7 @@ export async function GET(
 
     let variations: any[] = [];
     if (product.type === 'variable' && product.variations?.length > 0) {
-      const variationsResponse = await api.get(`products/${product.id}/variations`);
+      const variationsResponse = await getWooApi().get(`products/${product.id}/variations`);
       variations = variationsResponse.data || [];
     }
 

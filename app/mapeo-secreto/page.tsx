@@ -1,11 +1,11 @@
 // ¡MACHETAZO: /app/mapeo-secreto/page.tsx! 
 
-import api from "@/lib/woocommerce"; 
+import { getWooApi } from "@/lib/woocommerce"; 
 
 // Función pa' jalar productos con filtros y paginación 
 async function getMapeoDeProductos(params: any) { 
   try { 
-    const response = await api.get("products", params); 
+    const response = await getWooApi().get("products", params); 
     return { 
       data: response.data, 
       total: parseInt(response.headers?.["x-wp-total"] ?? "0"), 

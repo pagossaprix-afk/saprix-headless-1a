@@ -12,22 +12,23 @@ import type {
   AttributeWithTerms
 } from "@/types/woocommerce";
 
-const api = new API({
-  url: process.env.WOOCOMMERCE_API_URL || "",
-  consumerKey: process.env.WOOCOMMERCE_CONSUMER_KEY || "",
-  consumerSecret: process.env.WOOCOMMERCE_CONSUMER_SECRET || "",
-  version: "wc/v3",
-});
+let _api: API | null = null;
 
-export default api;
-export const wcApi = api;
+export function getWooApi(): API {
+  if (_api) return _api;
+  const url = process.env.WOOCOMMERCE_API_URL || "";
+  const consumerKey = process.env.WOOCOMMERCE_CONSUMER_KEY || "";
+  const consumerSecret = process.env.WOOCOMMERCE_CONSUMER_SECRET || "";
+  _api = new API({ url, consumerKey, consumerSecret, version: "wc/v3" });
+  return _api;
+}
 
 /**
  * Obtiene las variaciones de un producto por su ID.
  */
 export async function getProductVariations(productId: number): Promise<Variation[]> {
   try {
-    const response = await api.get(`products/${productId}/variations`, {
+    const response = await getWooApi().get(`products/${productId}/variations`, {
       per_page: 100,
     });
 
@@ -47,7 +48,7 @@ export async function getProductVariations(productId: number): Promise<Variation
 // Traer producto por slug (primer resultado)
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
-    const response = await api.get("products", { slug, per_page: 1 });
+    const response = await getWooApi().get("products", { slug, per_page: 1 });
     const items = response.data ?? [];
     if (Array.isArray(items) && items.length > 0) {
       return items[0] as Product;
@@ -63,7 +64,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 // Traer el producto más reciente (fallback para la página de referencia)
 export async function getLatestProduct(): Promise<Product | null> {
   try {
-    const response = await api.get("products", { per_page: 1, order: "desc", orderby: "date" });
+    const response = await getWooApi().get("products", { per_page: 1, order: "desc", orderby: "date" });
     const items = response.data ?? [];
     if (Array.isArray(items) && items.length > 0) {
       return items[0] as Product;
