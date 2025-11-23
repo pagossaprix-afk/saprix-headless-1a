@@ -63,6 +63,7 @@ export default function TabNotifier() {
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("blur", onBlur);
     window.addEventListener("focus", onFocus);
+    onVisibility();
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("blur", onBlur);
@@ -74,4 +75,3 @@ export default function TabNotifier() {
 
   return null;
 }
-
