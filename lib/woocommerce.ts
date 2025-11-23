@@ -5,7 +5,15 @@
 import "server-only";
 
 import API from "@woocommerce/woocommerce-rest-api";
-import type { Variation } from "@/types/woocommerce";
+import type {
+  Variation,
+  Product,
+  Category,
+  Tag,
+  ProductAttribute,
+  AttributeTerm,
+  AttributeWithTerms
+} from "@/types/woocommerce";
 
 const api = new API({
   url: process.env.WOOCOMMERCE_API_URL || "",
@@ -47,7 +55,7 @@ export async function getProductVariations(productId: number): Promise<Variation
 }
 
 // Traer producto por slug (primer resultado)
-export async function getProductBySlug(slug: string): Promise<any | null> {
+export async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
     const response = await api.get("products", { slug, per_page: 1 });
     const items = (response as any)?.data ?? [];
@@ -62,7 +70,7 @@ export async function getProductBySlug(slug: string): Promise<any | null> {
 }
 
 // Traer el producto más reciente (fallback para la página de referencia)
-export async function getLatestProduct(): Promise<any | null> {
+export async function getLatestProduct(): Promise<Product | null> {
   try {
     const response = await api.get("products", { per_page: 1, order: "desc", orderby: "date" });
     const items = (response as any)?.data ?? [];

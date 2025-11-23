@@ -4,9 +4,12 @@ import { productSingleMapping } from "@/config/mappings/product-single";
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: { slug: string } };
+type Props = {
+  params: Promise<{ slug: string }>
+};
 
-export default async function ProductPage({ params }: Props) {
+export default async function ProductPage(props: Props) {
+  const params = await props.params;
   const { slug } = params;
   const product = await getProductBySlug(slug);
   if (!product) {

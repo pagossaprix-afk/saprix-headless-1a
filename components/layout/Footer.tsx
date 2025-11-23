@@ -1,3 +1,5 @@
+'use client';
+
 // En /components/layout/Footer.tsx
 import SaprixLogo from "@/components/ui/SaprixLogo";
 
