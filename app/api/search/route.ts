@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getWooApi } from "@/lib/woocommerce";
+import { getWooApi } from "@/lib/woocommerce-edge";
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
       const respCats = await getWooApi().get("products/categories", { per_page: 8, search: q });
       const cats = Array.isArray((respCats as any).data) ? (respCats as any).data : [];
       categorias = cats.map((c: any) => ({ nombre: c.name, slug: c.slug, count: Number(c?.count || 0) }));
-    } catch {}
+    } catch { }
 
     // Páginas (estáticas del sitio)
     const paginasFuente = [

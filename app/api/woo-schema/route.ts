@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getWooApi } from "@/lib/woocommerce";
+import { getWooApi } from "@/lib/woocommerce-edge";
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic";

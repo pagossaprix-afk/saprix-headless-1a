@@ -19,12 +19,12 @@ export default function ProductCard({ id, name, price, imageUrl, slug }: Product
   // Imagen 'placeholder' por si un guayo no tiene foto
   const finalImageUrl = imageUrl || '/placeholder-image.png';
 
+  // Parse price string to number (remove non-numeric chars except dot)
+  const numericPrice = parseFloat(price.replace(/[^0-9.]/g, '')) || 0;
+
   const handleAddToCart = (e: MouseEvent) => {
     e.preventDefault(); // Prevent navigation
     e.stopPropagation();
-
-    // Parse price string to number (remove non-numeric chars except dot)
-    const numericPrice = parseFloat(price.replace(/[^0-9.]/g, '')) || 0;
 
     addItem({
       id,
@@ -38,9 +38,9 @@ export default function ProductCard({ id, name, price, imageUrl, slug }: Product
 
   return (
     <Link href={`/producto/${slug}`} className="group block relative">
-      <div className="overflow-hidden bg-saprix-indigo rounded-lg border-2 border-saprix-indigo transition-all duration-300 hover:border-saprix-electric-blue">
+      <div className="overflow-hidden bg-white border-2 border-saprix-gray-200 transition-all duration-300 hover:border-saprix-electric-blue -skew-x-6">
         {/* Contenedor de la Imagen */}
-        <div className="relative w-full aspect-square">
+        <div className="relative w-full aspect-square skew-x-6 scale-105">
           <Image
             src={finalImageUrl}
             alt={name}
@@ -48,25 +48,28 @@ export default function ProductCard({ id, name, price, imageUrl, slug }: Product
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             className="object-cover transition-transform duration-300 group-hover:scale-110"
           />
-          {/* Quick Add Button */}
-          <button
-            onClick={handleAddToCart}
-            className="absolute bottom-2 right-2 p-2 bg-lime-400 text-black rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-lime-300 transform translate-y-2 group-hover:translate-y-0"
-            title="Agregar al carrito"
-          >
-            <ShoppingCart className="w-5 h-5" />
-          </button>
         </div>
-      </div>
 
-      {/* Información del Producto */}
-      <div className="mt-3 px-1">
-        <h3 className="text-sm font-semibold text-saprix-white truncate group-hover:text-saprix-electric-blue">
-          {name}
-        </h3>
-        <p className="mt-1 text-base font-bold text-saprix-white">
-          ${price}
-        </p>
+        {/* Contenido de la Tarjeta */}
+        <div className="p-4 bg-white skew-x-6">
+          <h3 className="text-lg font-inter font-bold text-saprix-gray-900 mb-1 truncate">{name}</h3>
+          <p className="text-saprix-gray-500 text-sm mb-3 font-inter">Fútbol Sala</p>
+          <div className="flex items-center justify-between">
+            <span className="text-xl font-inter font-bold text-saprix-electric-blue">
+              {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP" }).format(numericPrice)}
+            </span>
+            <button
+              onClick={(e) => {
+                e.preventDefault(); // Prevent navigation when clicking the button
+                handleAddToCart(e); // Pass the event to handleAddToCart
+              }}
+              className="p-2 bg-saprix-electric-blue text-white hover:bg-saprix-electric-blue-dark transition-colors duration-200 -skew-x-6"
+              aria-label="Añadir al carrito"
+            >
+              <ShoppingCart className="w-5 h-5 skew-x-6" />
+            </button>
+          </div>
+        </div>
       </div>
     </Link>
   );

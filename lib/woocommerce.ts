@@ -16,9 +16,16 @@ let _api: API | null = null;
 
 export function getWooApi(): API {
   if (_api) return _api;
-  const url = process.env.WOOCOMMERCE_API_URL || "";
-  const consumerKey = process.env.WOOCOMMERCE_CONSUMER_KEY || "";
-  const consumerSecret = process.env.WOOCOMMERCE_CONSUMER_SECRET || "";
+
+  // TEMP: Hardcoded fallback for localhost development
+  const LOCALHOST_URL = "https://pagos.saprix.com.co";
+  const LOCALHOST_CK = "ck_88721898d82f29e0f8664d7e3316aa460340f587";
+  const LOCALHOST_CS = "cs_37ebd5161dd1ed62e199570e702fb7d123454569";
+
+  const url = process.env.NEXT_PUBLIC_WORDPRESS_URL || LOCALHOST_URL;
+  const consumerKey = process.env.WOOCOMMERCE_CONSUMER_KEY || LOCALHOST_CK;
+  const consumerSecret = process.env.WOOCOMMERCE_CONSUMER_SECRET || LOCALHOST_CS;
+
   _api = new API({ url, consumerKey, consumerSecret, version: "wc/v3" });
   return _api;
 }
@@ -166,9 +173,14 @@ export async function getSizeOptionsFromVariations(productId: number): Promise<A
 // -------- Catálogo global: categorías, etiquetas y atributos --------
 
 function buildUrl(endpoint: string, params: Record<string, unknown> = {}): string {
-  const base = (process.env.WOOCOMMERCE_API_URL || "").replace(/\/$/, "");
-  const ck = process.env.WOOCOMMERCE_CONSUMER_KEY || "";
-  const cs = process.env.WOOCOMMERCE_CONSUMER_SECRET || "";
+  // TEMP: Hardcoded fallback for localhost development due to .env file corruption issues
+  const LOCALHOST_URL = "https://pagos.saprix.com.co";
+  const LOCALHOST_CK = "ck_88721898d82f29e0f8664d7e3316aa460340f587";
+  const LOCALHOST_CS = "cs_37ebd5161dd1ed62e199570e702fb7d123454569";
+
+  const base = (process.env.NEXT_PUBLIC_WORDPRESS_URL || LOCALHOST_URL).replace(/\/$/, "");
+  const ck = process.env.WOOCOMMERCE_CONSUMER_KEY || LOCALHOST_CK;
+  const cs = process.env.WOOCOMMERCE_CONSUMER_SECRET || LOCALHOST_CS;
   const url = new URL(`${base}/wp-json/wc/v3/${endpoint}`);
 
   Object.entries(params || {}).forEach(([k, v]) => {
@@ -261,4 +273,60 @@ export async function getShopSidebarData(): Promise<{
     getAllProductAttributesWithTerms(),
   ]);
   return { categories, tags, attributes };
+}
+
+/**
+ * Obtiene productos con filtros, paginación y ordenamiento
+ */
+export async function getProducts(params: {
+  category?: string;
+  tag?: string;
+  page?: number;
+  perPage?: number;
+  orderby?: string;
+  order?: 'asc' | 'desc';
+  search?: string;
+} = {}): Promise<{ products: Product[]; total: number; totalPages: number }> {
+  try {
+    const {
+      category,
+      tag,
+      page = 1,
+      perPage = 20,
+      orderby = 'date',
+      order = 'desc',
+      search,
+    } = params;
+
+    const queryParams: any = {
+      per_page: perPage,
+      page,
+      orderby,
+      order,
+      status: 'publish',
+    };
+
+    if (category) {
+      queryParams.category = category;
+    }
+
+    if (tag) {
+      queryParams.tag = tag;
+    }
+
+    if (search) {
+      queryParams.search = search;
+    }
+
+    const response = await getWooApi().get('products', queryParams);
+
+    const products = (response.data ?? []) as Product[];
+    const total = parseInt(response.headers?.['x-wp-total'] || '0');
+    const totalPages = parseInt(response.headers?.['x-wp-totalpages'] || '1');
+
+    return { products, total, totalPages };
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return { products: [], total: 0, totalPages: 0 };
+  }
 }

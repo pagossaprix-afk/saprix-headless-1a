@@ -27,30 +27,30 @@ const brand = {
 
 // Categorías Saprix - Marca Colombiana de Zapatillas de Fútbol Sala
 const categories = [
-  { name: "Sala Clásicos", Icon: GiRunningShoe, href: "/tienda?category=sala-clasicos", color: "#3B00FF", description: "Diseño tradicional, máxima comodidad" },
-  { name: "Velocidad", Icon: GiRunningShoe, href: "/tienda?category=velocidad", color: "#FF9500", description: "Ligereza y rapidez extrema" },
-  { name: "Agarre", Icon: GiRunningShoe, href: "/tienda?category=agarre", color: "#00C2FF", description: "Tracción superior en cancha" },
-  { name: "Niños", Icon: IoShirt, href: "/tienda?category=ninos", color: "#FF3E7F", description: "Diseñados para jóvenes talentos" },
-  { name: "Medias", Icon: GiSocks, href: "/tienda?category=medias", color: "#8A2BE2", description: "Complementa tu equipamiento" },
+  { name: "Sala Clásicos", Icon: GiRunningShoe, href: "/productos?category=sala-clasicos", color: "#3B00FF", description: "Diseño tradicional, máxima comodidad" },
+  { name: "Velocidad", Icon: GiRunningShoe, href: "/productos?category=velocidad", color: "#FF9500", description: "Ligereza y rapidez extrema" },
+  { name: "Agarre", Icon: GiRunningShoe, href: "/productos?category=agarre", color: "#00C2FF", description: "Tracción superior en cancha" },
+  { name: "Niños", Icon: IoShirt, href: "/productos?category=ninos", color: "#FF3E7F", description: "Diseñados para jóvenes talentos" },
+  { name: "Medias", Icon: GiSocks, href: "/productos?category=medias", color: "#8A2BE2", description: "Complementa tu equipamiento" },
 ];
 
 const navItems = [
   {
-    name: "Hombre", href: "/tienda?hombre", submenu: [
-      { name: "Zapatillas Sala", href: "/tienda?hombre&cat=zapatillas" },
-      { name: "Ofertas", href: "/tienda?hombre&cat=ofertas" },
+    name: "Hombre", href: "/productos?hombre", submenu: [
+      { name: "Zapatillas Sala", href: "/productos?hombre&cat=zapatillas" },
+      { name: "Ofertas", href: "/productos?hombre&cat=ofertas" },
     ]
   },
   {
-    name: "Mujer", href: "/tienda?mujer", submenu: [
-      { name: "Zapatillas Sala", href: "/tienda?mujer&cat=zapatillas" },
-      { name: "Ofertas", href: "/tienda?mujer&cat=ofertas" },
+    name: "Mujer", href: "/productos?mujer", submenu: [
+      { name: "Zapatillas Sala", href: "/productos?mujer&cat=zapatillas" },
+      { name: "Ofertas", href: "/productos?mujer&cat=ofertas" },
     ]
   },
   {
-    name: "Niños", href: "/tienda?ninos", submenu: [
-      { name: "Zapatillas Sala", href: "/tienda?ninos&cat=zapatillas" },
-      { name: "Ofertas", href: "/tienda?ninos&cat=ofertas" },
+    name: "Niños", href: "/productos?ninos", submenu: [
+      { name: "Zapatillas Sala", href: "/productos?ninos&cat=zapatillas" },
+      { name: "Ofertas", href: "/productos?ninos&cat=ofertas" },
     ]
   },
   { name: "Ofertas", href: "/ofertas" },
@@ -233,7 +233,7 @@ export default function FutsalHeader() {
                     onSubmit={(e) => {
                       e.preventDefault();
                       const q = searchQuery.trim();
-                      const base = new URL(q ? `/tienda?q=${encodeURIComponent(q)}` : "/tienda", window.location.origin);
+                      const base = new URL(q ? `/productos?q=${encodeURIComponent(q)}` : "/productos", window.location.origin);
                       router.push(base.pathname + base.search);
                       setShowResults(false);
                     }}
@@ -308,7 +308,7 @@ export default function FutsalHeader() {
                             </Link>
                           ))}
                           <Link
-                            href={`/tienda?q=${encodeURIComponent(searchQuery)}`}
+                            href={`/productos?q=${encodeURIComponent(searchQuery)}`}
                             onClick={() => setShowResults(false)}
                             className="block mt-2 text-center text-xs font-bold text-saprix-electric-blue hover:underline py-2 border-t border-gray-100 dark:border-gray-800"
                           >
@@ -536,7 +536,7 @@ export default function FutsalHeader() {
                                 </h4>
 
                                 {/* Banner principal - Gradiente Saprix */}
-                                <Link href="/tienda?featured=true" className="group block mb-3">
+                                <Link href="/productos?featured=true" className="group block mb-3">
                                   <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-saprix-electric-blue to-blue-700 p-5 text-white shadow-lg shadow-saprix-electric-blue/20 group-hover:shadow-saprix-electric-blue/30 transition-all">
                                     <div className="relative z-10">
                                       <div className="flex items-center gap-2 mb-2">
@@ -561,7 +561,7 @@ export default function FutsalHeader() {
 
                                 {/* Mini links - Cards con borde sutil */}
                                 <div className="grid grid-cols-2 gap-3">
-                                  <Link href="/tienda?sale=true" className="group">
+                                  <Link href="/productos?sale=true" className="group">
                                     <div className="p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50/50 dark:hover:bg-red-900/10 transition-all">
                                       <div className="flex items-center gap-2 mb-1">
                                         <Flame className="w-4 h-4 text-red-500" />
@@ -570,7 +570,7 @@ export default function FutsalHeader() {
                                       <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Hasta 40% off</p>
                                     </div>
                                   </Link>
-                                  <Link href="/tienda?new=true" className="group">
+                                  <Link href="/productos?new=true" className="group">
                                     <div className="p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-saprix-lime/50 hover:bg-saprix-lime/5 transition-all">
                                       <div className="flex items-center gap-2 mb-1">
                                         <Package className="w-4 h-4 text-saprix-electric-blue dark:text-saprix-lime" />
@@ -638,7 +638,7 @@ export default function FutsalHeader() {
                                 </span>
                               </div>
                               <Link
-                                href="/tienda"
+                                href="/productos"
                                 className="group inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold rounded-full hover:bg-saprix-electric-blue dark:hover:bg-saprix-lime hover:text-white dark:hover:text-black transition-all duration-300 shadow-md hover:shadow-lg"
                               >
                                 Ver catálogo completo
@@ -663,7 +663,7 @@ export default function FutsalHeader() {
             <nav className="hidden items-center gap-4 font-semibold lg:flex">
               {[
                 { name: "Inicio", href: "/" },
-                { name: "Tienda", href: "/tienda" },
+                { name: "Tienda", href: "/productos" },
                 { name: "Blog", href: "/blog" },
                 { name: "Páginas", href: "/pages" },
                 { name: "Contacto", href: "/contacto" },

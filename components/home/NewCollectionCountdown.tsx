@@ -88,9 +88,9 @@ export default function NewCollectionCountdown({ targetDate }: { targetDate?: st
               transition={{ duration: 0.6, delay: 0.2 }}
               className="inline-block mb-4"
             >
-              <span className="px-6 py-2 bg-saprix-lime text-black text-sm font-bold rounded-full uppercase tracking-wider">
-                Próximamente
-              </span>
+              <div className="px-6 py-2 bg-saprix-lime text-black text-sm font-bold uppercase tracking-wider -skew-x-6">
+                <span className="block skew-x-6">Próximamente</span>
+              </div>
             </motion.div>
 
             <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6">
@@ -123,12 +123,12 @@ export default function NewCollectionCountdown({ targetDate }: { targetDate?: st
                 className="relative group"
               >
                 {/* Glassmorphism card */}
-                <div className="relative bg-white dark:bg-gray-900/40 dark:backdrop-blur-md dark:border dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-lg dark:shadow-saprix-electric-blue/10 hover:shadow-xl dark:hover:shadow-saprix-electric-blue/20 transition-all duration-500">
+                <div className="relative bg-white dark:bg-gray-900/40 dark:backdrop-blur-md dark:border dark:border-white/10 p-6 sm:p-8 shadow-lg dark:shadow-saprix-electric-blue/10 hover:shadow-xl dark:hover:shadow-saprix-electric-blue/20 transition-all duration-500 -skew-x-6">
                   {/* Animated border glow */}
-                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-saprix-electric-blue to-saprix-lime opacity-0 group-hover:opacity-20 dark:group-hover:opacity-30 blur-xl transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-saprix-electric-blue to-saprix-lime opacity-0 group-hover:opacity-20 dark:group-hover:opacity-30 blur-xl transition-opacity duration-500" />
 
                   {/* Content */}
-                  <div className="relative">
+                  <div className="relative skew-x-6">
                     <motion.div
                       key={`${box.label}-${box.value}`}
                       initial={{ scale: 1.2, opacity: 0 }}
@@ -145,8 +145,8 @@ export default function NewCollectionCountdown({ targetDate }: { targetDate?: st
                   </div>
 
                   {/* Decorative corner */}
-                  <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-saprix-lime dark:border-saprix-electric-blue rounded-tr-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-saprix-electric-blue dark:border-saprix-lime rounded-bl-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-saprix-lime dark:border-saprix-electric-blue opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-saprix-electric-blue dark:border-saprix-lime opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </div>
               </motion.div>
             ))}
@@ -162,24 +162,26 @@ export default function NewCollectionCountdown({ targetDate }: { targetDate?: st
           >
             <Link
               href="/tienda"
-              className="group px-8 py-4 bg-saprix-electric-blue text-white font-semibold rounded-full hover:bg-saprix-electric-blue-dark transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl"
+              className="group px-8 py-4 bg-saprix-electric-blue text-white font-semibold hover:bg-saprix-electric-blue-dark transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl -skew-x-6"
             >
-              Explorar Tienda
-              <svg
-                className="w-5 h-5 group-hover:translate-x-1 transition-transform"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
+              <span className="flex items-center gap-2 skew-x-6">
+                Explorar Tienda
+                <svg
+                  className="w-5 h-5 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </span>
             </Link>
 
             <Link
               href="/contacto"
-              className="px-8 py-4 bg-transparent border-2 border-saprix-lime text-saprix-lime dark:text-saprix-lime font-semibold rounded-full hover:bg-saprix-lime hover:text-black dark:hover:text-black transition-all duration-300"
+              className="px-8 py-4 bg-transparent border-2 border-saprix-lime text-saprix-lime dark:text-saprix-lime font-semibold hover:bg-saprix-lime hover:text-black dark:hover:text-black transition-all duration-300 -skew-x-6"
             >
-              Notificarme
+              <span className="block skew-x-6">Notificarme</span>
             </Link>
           </motion.div>
 
@@ -202,11 +204,13 @@ export default function NewCollectionCountdown({ targetDate }: { targetDate?: st
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 1.1 + idx * 0.1 }}
-                className="text-center p-6 rounded-2xl bg-white/50 dark:bg-gray-900/20 dark:backdrop-blur-sm dark:border dark:border-white/5"
+                className="text-center p-6 bg-white/50 dark:bg-gray-900/20 dark:backdrop-blur-sm dark:border dark:border-white/5 -skew-x-6"
               >
-                <div className="text-4xl mb-3">{feature.icon}</div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{feature.desc}</p>
+                <div className="skew-x-6">
+                  <div className="text-4xl mb-3">{feature.icon}</div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{feature.desc}</p>
+                </div>
               </motion.div>
             ))}
           </motion.div>

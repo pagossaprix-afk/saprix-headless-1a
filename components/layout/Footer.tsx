@@ -118,7 +118,7 @@ export default function DixorFooter() {
               <Link href="/contacto" className="text-sm hover:text-white transition-colors">
                 Contacto
               </Link>
-              <Link href="/tienda" className="text-sm hover:text-white transition-colors">
+              <Link href="/productos" className="text-sm hover:text-white transition-colors">
                 FAQS
               </Link>
               <Link href="/servicios" className="text-sm hover:text-white transition-colors">
