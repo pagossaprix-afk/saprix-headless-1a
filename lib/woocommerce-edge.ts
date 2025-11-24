@@ -9,6 +9,12 @@ function buildUrl(endpoint: string, params: Record<string, unknown> = {}): strin
     const base = (process.env.NEXT_PUBLIC_WORDPRESS_URL || LOCALHOST_URL).replace(/\/$/, "");
     const ck = process.env.WOOCOMMERCE_CONSUMER_KEY || LOCALHOST_CK;
     const cs = process.env.WOOCOMMERCE_CONSUMER_SECRET || LOCALHOST_CS;
+
+    // Validate that we have a proper URL
+    if (!base || base.trim() === "") {
+        throw new Error("WooCommerce URL is not configured. Please set NEXT_PUBLIC_WORDPRESS_URL environment variable.");
+    }
+
     const url = new URL(`${base}/wp-json/wc/v3/${endpoint}`);
 
     Object.entries(params || {}).forEach(([k, v]) => {
@@ -22,13 +28,18 @@ function buildUrl(endpoint: string, params: Record<string, unknown> = {}): strin
 }
 
 async function wcFetchRaw<T>(endpoint: string, params: Record<string, unknown> = {}, revalidate = 600): Promise<{ data: T; headers: Headers }> {
-    const url = buildUrl(endpoint, params);
-    const res = await fetch(url, { next: { revalidate } });
-    if (!res.ok) {
-        throw new Error(`WooCommerce fetch failed: ${res.status} ${res.statusText}`);
+    try {
+        const url = buildUrl(endpoint, params);
+        const res = await fetch(url, { next: { revalidate } });
+        if (!res.ok) {
+            throw new Error(`WooCommerce fetch failed: ${res.status} ${res.statusText}`);
+        }
+        const data = (await res.json()) as T;
+        return { data, headers: res.headers };
+    } catch (error) {
+        console.error(`Failed to fetch from WooCommerce endpoint "${endpoint}":`, error);
+        throw error;
     }
-    const data = (await res.json()) as T;
-    return { data, headers: res.headers };
 }
 
 async function wcFetchAll<T>(endpoint: string, params: Record<string, unknown> = {}, revalidate = 600): Promise<T[]> {
