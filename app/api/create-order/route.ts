@@ -79,6 +79,7 @@ export async function POST(request: Request) {
         return NextResponse.json({
             success: true,
             orderId: data.id,
+            orderKey: data.order_key, // Needed for WooCommerce payment URL
             message: 'Orden creada exitosamente'
         });
 

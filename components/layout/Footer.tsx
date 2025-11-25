@@ -108,34 +108,49 @@ export default function DixorFooter() {
 
           {/* Right Section - Links & Newsletter */}
           <div className="space-y-8">
-            <h3 className="text-white font-semibold text-lg">Enlaces Útiles</h3>
-
             {/* Links Grid */}
-            <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-              <Link href="/nosotros" className="text-sm hover:text-white transition-colors">
-                Sobre Nosotros
-              </Link>
-              <Link href="/contacto" className="text-sm hover:text-white transition-colors">
-                Contacto
-              </Link>
-              <Link href="/productos" className="text-sm hover:text-white transition-colors">
-                FAQS
-              </Link>
-              <Link href="/servicios" className="text-sm hover:text-white transition-colors">
-                Servicios
-              </Link>
-              <Link href="/terminos" className="text-sm hover:text-white transition-colors">
-                Términos y Condiciones
-              </Link>
-              <Link href="/privacidad" className="text-sm hover:text-white transition-colors">
-                Política de Privacidad
-              </Link>
-              <Link href="/carreras" className="text-sm hover:text-white transition-colors">
-                Carreras
-              </Link>
-              <Link href="/ayuda" className="text-sm hover:text-white transition-colors">
-                Centro de Ayuda
-              </Link>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-4">
+              {/* Company */}
+              <div>
+                <h4 className="text-white font-semibold mb-3 text-sm">Empresa</h4>
+                <div className="space-y-2">
+                  <Link href="/nosotros" className="block text-sm hover:text-white transition-colors">
+                    Sobre Nosotros
+                  </Link>
+                  <Link href="/contacto" className="block text-sm hover:text-white transition-colors">
+                    Contacto
+                  </Link>
+                </div>
+              </div>
+
+              {/* Support */}
+              <div>
+                <h4 className="text-white font-semibold mb-3 text-sm">Soporte</h4>
+                <div className="space-y-2">
+                  <Link href="/preguntas-frecuentes" className="block text-sm hover:text-white transition-colors">
+                    Preguntas Frecuentes
+                  </Link>
+                  <Link href="/envios" className="block text-sm hover:text-white transition-colors">
+                    Envíos
+                  </Link>
+                  <Link href="/devoluciones" className="block text-sm hover:text-white transition-colors">
+                    Devoluciones
+                  </Link>
+                </div>
+              </div>
+
+              {/* Legal */}
+              <div>
+                <h4 className="text-white font-semibold mb-3 text-sm">Legal</h4>
+                <div className="space-y-2">
+                  <Link href="/terminos-y-condiciones" className="block text-sm hover:text-white transition-colors">
+                    Términos y Condiciones
+                  </Link>
+                  <Link href="/politica-de-privacidad" className="block text-sm hover:text-white transition-colors">
+                    Política de Privacidad
+                  </Link>
+                </div>
+              </div>
             </div>
 
             {/* Newsletter */}

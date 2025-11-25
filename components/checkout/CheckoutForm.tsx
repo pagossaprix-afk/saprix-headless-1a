@@ -1,75 +1,24 @@
 "use client";
 
-import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { motion } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
-
-interface FormData {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    address: string;
-    city: string;
-    state: string;
-    postcode: string;
-    documentId: string; // Cédula/NIT
-}
 
 export default function CheckoutForm() {
-    const { items, cartTotal, clearCart } = useCart();
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [formData, setFormData] = useState<FormData>({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        address: '',
-        city: '',
-        state: '',
-        postcode: '',
-        documentId: '',
-    });
+    const { items, cartTotal } = useCart();
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-
-        try {
-            const response = await fetch('/api/create-order', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    customer: formData,
-                    items: items,
-                    total: cartTotal,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Error al crear la orden');
+    const handleCheckout = () => {
+        // Build URL parameters to add products to WooCommerce cart
+        const cartParams = items.map(item => {
+            // If product has variation, use variation_id, otherwise use product_id
+            if (item.variationId) {
+                return `add-to-cart=${item.id}&variation_id=${item.variationId}&quantity=${item.quantity}`;
+            } else {
+                return `add-to-cart=${item.id}&quantity=${item.quantity}`;
             }
+        }).join('&');
 
-            // Clear cart and redirect to payment gateway
-            clearCart();
-            window.location.href = `https://pagos.saprix.com.co?order_id=${data.orderId}`;
-
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
+        // Redirect to WooCommerce checkout with cart items
+        window.location.href = `https://pagos.saprix.com.co/checkout/?${cartParams}`;
     };
 
     if (items.length === 0) {
@@ -77,7 +26,7 @@ export default function CheckoutForm() {
             <div className="text-center py-12">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Tu carrito está vacío</h2>
                 <p className="text-gray-600 dark:text-gray-400 mb-8">Agrega productos para continuar con el pago.</p>
-                <a href="/tienda" className="inline-block bg-saprix-electric-blue text-white px-8 py-3 rounded-full font-semibold hover:bg-saprix-electric-blue-dark transition-colors">
+                <a href="/productos" className="inline-block bg-saprix-electric-blue text-white px-8 py-3 rounded-full font-semibold hover:bg-saprix-electric-blue-dark transition-colors">
                     Ir a la Tienda
                 </a>
             </div>
@@ -85,153 +34,13 @@ export default function CheckoutForm() {
     }
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Formulario de Envío */}
-            <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-            >
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Detalles de Facturación y Envío</h2>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre</label>
-                            <input
-                                type="text"
-                                name="firstName"
-                                required
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-saprix-electric-blue focus:border-transparent"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Apellido</label>
-                            <input
-                                type="text"
-                                name="lastName"
-                                required
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-saprix-electric-blue focus:border-transparent"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cédula / NIT</label>
-                        <input
-                            type="text"
-                            name="documentId"
-                            required
-                            value={formData.documentId}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-saprix-electric-blue focus:border-transparent"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                            <input
-                                type="email"
-                                name="email"
-                                required
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-saprix-electric-blue focus:border-transparent"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teléfono</label>
-                            <input
-                                type="tel"
-                                name="phone"
-                                required
-                                value={formData.phone}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-saprix-electric-blue focus:border-transparent"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dirección</label>
-                        <input
-                            type="text"
-                            name="address"
-                            required
-                            value={formData.address}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-saprix-electric-blue focus:border-transparent"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ciudad</label>
-                            <input
-                                type="text"
-                                name="city"
-                                required
-                                value={formData.city}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-saprix-electric-blue focus:border-transparent"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Departamento</label>
-                            <input
-                                type="text"
-                                name="state"
-                                required
-                                value={formData.state}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-saprix-electric-blue focus:border-transparent"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Código Postal</label>
-                            <input
-                                type="text"
-                                name="postcode"
-                                value={formData.postcode}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-saprix-electric-blue focus:border-transparent"
-                            />
-                        </div>
-                    </div>
-
-                    {error && (
-                        <div className="p-4 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg">
-                            {error}
-                        </div>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full py-4 bg-saprix-electric-blue text-white font-bold rounded-xl hover:bg-saprix-electric-blue-dark transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                        {loading ? (
-                            <>
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                                Procesando...
-                            </>
-                        ) : (
-                            'Realizar Pedido y Pagar'
-                        )}
-                    </button>
-                </form>
-            </motion.div>
-
+        <div className="max-w-2xl mx-auto">
             {/* Resumen del Pedido */}
             <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="bg-gray-50 dark:bg-gray-800 p-8 rounded-2xl h-fit sticky top-24"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-gray-50 dark:bg-gray-800 p-8 rounded-2xl"
             >
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Resumen del Pedido</h3>
                 <div className="space-y-4 mb-6 max-h-96 overflow-y-auto pr-2">
@@ -258,14 +67,10 @@ export default function CheckoutForm() {
                     ))}
                 </div>
 
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2 mb-6">
                     <div className="flex justify-between text-gray-600 dark:text-gray-400">
                         <span>Subtotal</span>
                         <span>${cartTotal.toLocaleString('es-CO')}</span>
-                    </div>
-                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                        <span>Envío</span>
-                        <span className="text-green-600 dark:text-green-400">Gratis</span>
                     </div>
                     <div className="flex justify-between text-xl font-bold text-gray-900 dark:text-white pt-2">
                         <span>Total</span>
@@ -273,8 +78,24 @@ export default function CheckoutForm() {
                     </div>
                 </div>
 
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                        Al hacer clic en "Proceder al Pago", serás redirigido a nuestro checkout seguro donde podrás completar tus datos de envío y realizar el pago.
+                    </p>
+                </div>
+
+                <button
+                    onClick={handleCheckout}
+                    className="w-full py-4 bg-saprix-electric-blue text-white font-bold rounded-xl hover:bg-saprix-electric-blue-dark transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                >
+                    Proceder al Pago
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                </button>
+
                 <div className="mt-6 text-xs text-gray-500 dark:text-gray-400 text-center">
-                    Al realizar el pedido, serás redirigido a nuestra pasarela de pagos segura.
+                    Pago 100% seguro con certificación PCI DSS
                 </div>
             </motion.div>
         </div>
