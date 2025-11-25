@@ -53,10 +53,10 @@ export async function getProductVariations(productId: number): Promise<Variation
 }
 
 // Traer producto por slug (primer resultado)
-// Revalidación reducida a 60 segundos para productos individuales
+// Revalidación desactivada (0) para evitar problemas de caché persistente y desincronización
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
-    const response = await wcFetchRaw<Product[]>("products", { slug, per_page: 1 }, 60);
+    const response = await wcFetchRaw<Product[]>("products", { slug, per_page: 1 }, 0);
     const items = response.data ?? [];
     if (Array.isArray(items) && items.length > 0) {
       return items[0];
@@ -68,6 +68,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     return null;
   }
 }
+
 
 // Traer el producto más reciente (fallback para la página de referencia)
 export async function getLatestProduct(): Promise<Product | null> {
@@ -196,7 +197,15 @@ function buildUrl(endpoint: string, params: Record<string, unknown> = {}): strin
 
 async function wcFetchRaw<T>(endpoint: string, params: Record<string, unknown> = {}, revalidate = 600): Promise<{ data: T; headers: Headers }> {
   const url = buildUrl(endpoint, params);
-  const res = await fetch(url, { next: { revalidate } });
+
+  const fetchOptions: RequestInit = {};
+  if (revalidate === 0) {
+    fetchOptions.cache = 'no-store';
+  } else {
+    fetchOptions.next = { revalidate };
+  }
+
+  const res = await fetch(url, fetchOptions);
   if (!res.ok) {
     throw new Error(`WooCommerce fetch failed: ${res.status} ${res.statusText}`);
   }

@@ -12,7 +12,8 @@ type Props = {
  * Aquí no hay "Wrapper", no hay "paja" de IA, no hay "swatches".
  * ¡Solo la data CRUDA como viene de la "bodega"!
  */
-export default async function AuditoriaProductoPage({ params }: Props) {
+export default async function AuditoriaProductoPage(props: Props) {
+  const params = await props.params;
   const { slug } = params;
 
   // 1. Pedimos el "Guayo Papá" (¡CUALQUIER GUAYO!)

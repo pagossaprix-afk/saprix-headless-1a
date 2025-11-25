@@ -3,6 +3,9 @@ import { getProductBySlug, getColorOptionsFromVariations, getSizeOptionsFromVari
 import ProductPageFigma from "@/components/product/ProductPageFigma";
 import { applyMapping } from "@/lib/mapping";
 
+// Forzar revalidación cada 60 segundos para evitar productos desactualizados
+export const revalidate = 60;
+
 interface ProductPageProps {
     params: {
         categoria: string;
@@ -11,7 +14,8 @@ interface ProductPageProps {
     };
 }
 
-export async function generateMetadata({ params }: ProductPageProps) {
+export async function generateMetadata(props: ProductPageProps) {
+    const params = await props.params;
     const product = await getProductBySlug(params.slug);
 
     if (!product) {
@@ -26,7 +30,8 @@ export async function generateMetadata({ params }: ProductPageProps) {
     };
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage(props: ProductPageProps) {
+    const params = await props.params;
     const product = await getProductBySlug(params.slug);
 
     if (!product) {
@@ -54,6 +59,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         { id: "variations", label: "variations", source: "variations", type: "any" },
         { id: "stock_status", label: "stock_status", source: "stock_status", type: "any" },
         { id: "stock_quantity", label: "stock_quantity", source: "stock_quantity", type: "any" },
+        { id: "type", label: "type", source: "type", type: "any" },
     ]);
 
     return (

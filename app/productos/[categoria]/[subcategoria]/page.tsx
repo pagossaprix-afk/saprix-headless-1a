@@ -17,7 +17,8 @@ interface SubcategoryPageProps {
     };
 }
 
-export async function generateMetadata({ params }: SubcategoryPageProps) {
+export async function generateMetadata(props: SubcategoryPageProps) {
+    const params = await props.params;
     const subcategory = await getCategoryBySlug(params.subcategoria);
 
     if (!subcategory) {
@@ -32,7 +33,9 @@ export async function generateMetadata({ params }: SubcategoryPageProps) {
     };
 }
 
-export default async function SubcategoryPage({ params, searchParams }: SubcategoryPageProps) {
+export default async function SubcategoryPage(props: SubcategoryPageProps) {
+    const params = await props.params;
+    const searchParams = await props.searchParams;
     const subcategory = await getCategoryBySlug(params.subcategoria);
 
     if (!subcategory) {

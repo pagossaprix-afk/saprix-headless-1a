@@ -16,7 +16,8 @@ interface CategoryPageProps {
     };
 }
 
-export async function generateMetadata({ params }: CategoryPageProps) {
+export async function generateMetadata(props: CategoryPageProps) {
+    const params = await props.params;
     const category = await getCategoryBySlug(params.categoria);
 
     if (!category) {
@@ -31,7 +32,9 @@ export async function generateMetadata({ params }: CategoryPageProps) {
     };
 }
 
-export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
+export default async function CategoryPage(props: CategoryPageProps) {
+    const params = await props.params;
+    const searchParams = await props.searchParams;
     const category = await getCategoryBySlug(params.categoria);
 
     if (!category) {
