@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { FiltersSidebar } from "@/components/shop/FiltersSidebar";
 import { ProductGridNike } from "@/components/shop/ProductGridNike";
 import { getShopSidebarData } from "@/lib/woocommerce";
-import { getCategoryBySlug, getCategoryBreadcrumbs, getCategoryHierarchy } from "@/lib/category-utils";
+import { getCategoryBySlug, getCategoryBreadcrumbs, getCategoryHierarchy, type CategoryNode } from "@/lib/category-utils";
 import { ChevronRight } from "lucide-react";
 
 interface CategoryPageProps {
@@ -97,7 +97,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                 <div className="bg-white dark:bg-gray-900 py-8 border-b border-gray-200 dark:border-gray-700">
                     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex flex-wrap gap-3">
-                            {subcategories.map((subcat) => (
+                            {subcategories.map((subcat: CategoryNode) => (
                                 <Link
                                     key={subcat.id}
                                     href={`/productos/${params.categoria}/${subcat.slug}`}
@@ -123,6 +123,15 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                                     categories={sidebarData.categories}
                                     tags={sidebarData.tags}
                                     attributes={sidebarData.attributes}
+                                    selected={{
+                                        category: searchParams.category ? [String(searchParams.category)] : undefined,
+                                        tag: searchParams.tag ? [String(searchParams.tag)] : undefined,
+                                        attr_linea: searchParams.attr_linea ? [String(searchParams.attr_linea)] : undefined,
+                                        attr_audiencia: searchParams.attr_audiencia ? [String(searchParams.attr_audiencia)] : undefined,
+                                        price_min: searchParams.price_min ? Number(searchParams.price_min) : undefined,
+                                        price_max: searchParams.price_max ? Number(searchParams.price_max) : undefined,
+                                    }}
+                                    currentParams={searchParams as Record<string, string>}
                                 />
                             </Suspense>
                         </div>
