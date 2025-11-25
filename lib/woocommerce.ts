@@ -53,12 +53,13 @@ export async function getProductVariations(productId: number): Promise<Variation
 }
 
 // Traer producto por slug (primer resultado)
+// Revalidación reducida a 60 segundos para productos individuales
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
-    const response = await getWooApi().get("products", { slug, per_page: 1 });
+    const response = await wcFetchRaw<Product[]>("products", { slug, per_page: 1 }, 60);
     const items = response.data ?? [];
     if (Array.isArray(items) && items.length > 0) {
-      return items[0] as Product;
+      return items[0];
     }
     return null;
   } catch (error: unknown) {

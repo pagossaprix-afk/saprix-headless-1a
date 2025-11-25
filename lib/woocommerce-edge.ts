@@ -64,7 +64,8 @@ export async function getAllProductCategories(): Promise<Category[]> {
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
     try {
-        const response = await wcFetchRaw<Product[]>("products", { slug, per_page: 1 });
+        // Revalidación reducida a 60 segundos para productos individuales
+        const response = await wcFetchRaw<Product[]>("products", { slug, per_page: 1 }, 60);
         const items = response.data ?? [];
         if (Array.isArray(items) && items.length > 0) {
             return items[0];
