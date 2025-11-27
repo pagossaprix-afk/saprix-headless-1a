@@ -1,4 +1,3 @@
-```typescript
 import Link from 'next/link';
 import Image from 'next/image';
 import { getProducts } from '@/lib/woocommerce';
@@ -28,7 +27,7 @@ export async function ProductGridNike({ searchParams }: ProductGridNikeProps) {
             }
         });
         stringParams.page = newPage.toString();
-        return `? ${ new URLSearchParams(stringParams).toString() } `;
+        return `?${new URLSearchParams(stringParams).toString()}`;
     };
 
     // Resolve top‑level category ID if provided
@@ -113,17 +112,26 @@ export async function ProductGridNike({ searchParams }: ProductGridNikeProps) {
                     const regularPrice = product.regular_price ? parseFloat(product.regular_price) : price;
 
                     // Build hierarchical URL: /productos/:categoria/:subcategoria/:slug
-                    let productUrl = `/ productos / ${ product.slug } `;
+                    let productUrl = `/productos/${product.slug}`;
                     if (product.categories && product.categories.length > 0) {
                         const subCat = product.categories[0];
                         const topCat = searchParams.categoria || subCat.slug; // fallback to first category if top not provided
-                        productUrl = `/ productos / ${ topCat } /${subCat.slug}/${ product.slug } `;
+                        productUrl = `/productos/${topCat}/${subCat.slug}/${product.slug}`;
                     }
 
                     return (
                         <div key={product.id} className="group">
                             <Link href={productUrl} className="block">
                                 <div className="relative aspect-square mb-4 bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                                    {product.images?.[0] ? (
+                                        <Image
+                                            src={ensureHttps(product.images[0].src)}
+                                            alt={product.name}
+                                            fill
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                        />
+                                    ) : (
                                         <div className="w-full h-full flex items-center justify-center">
                                             <span className="text-gray-400">Sin imagen</span>
                                         </div>
