@@ -44,15 +44,39 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
     });
   }, [selectedColor, colorOptions, sizeOptions]);
 
-  const mainImages: Media[] = images && images.length > 0 ? images : [{ src: mapped?.image ?? "/placeholder-image.png" }];
+  // Selected variation and stock information
+  const selectedVariation = useMemo(
+    () => variations.find((v) => v.id === selectedVariantId),
+    [selectedVariantId, variations]
+  );
+
+  const variationStock =
+    selectedVariation?.stock_quantity ??
+    (selectedVariation?.stock_status === "outofstock" ? 0 : undefined);
+
+  const isOutOfStock =
+    variationStock === 0 || selectedVariation?.stock_status === "outofstock";
+
+  const mainImages: Media[] =
+    images && images.length > 0
+      ? images
+      : [{ src: mapped?.image ?? "/placeholder-image.png" }];
 
   const priceFmt = useMemo(() => {
     const locale = "es-CO";
     const currency = "COP";
     try {
-      return new Intl.NumberFormat(locale, { style: "currency", currency, minimumFractionDigits: 0 });
+      return new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency,
+        minimumFractionDigits: 0,
+      });
     } catch {
-      return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 });
+      return new Intl.NumberFormat("es-CO", {
+        style: "currency",
+        currency: "COP",
+        minimumFractionDigits: 0,
+      });
     }
   }, []);
 
@@ -220,7 +244,12 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
                 <span className="text-saprix-gray-600 font-inter">4.8 (127 reseñas)</span>
               </div>
 
-              <p className="text-xl text-saprix-gray-600 font-inter leading-relaxed">{mapped?.short_description ? mapped.short_description : ""}</p>
+              {mapped?.short_description ? (
+                <div
+                  className="text-xl text-saprix-gray-600 font-inter leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: mapped.short_description }}
+                />
+              ) : null}
             </div>
 
             <div className="flex items-center space-x-4">
@@ -282,34 +311,84 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
               </div>
             )}
 
+            {/* Quantity & Stock */}
             <div className="space-y-6">
               <div className="flex items-center space-x-4">
-                <span className="text-lg font-inter font-semibold text-saprix-gray-900">Cantidad:</span>
+                <span className="text-lg font-inter font-semibold text-saprix-gray-900">
+                  Cantidad:
+                </span>
                 <div className="flex items-center border-2 border-saprix-gray-300 -skew-x-6">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 hover:bg-saprix-gray-100 transition-colors duration-200"><Minus className="w-5 h-5 skew-x-6" /></button>
-                  <span className="px-6 py-3 font-inter font-semibold text-lg min-w-[60px] text-center skew-x-6">{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} className="p-3 hover:bg-saprix-gray-100 transition-colors duration-200"><Plus className="w-5 h-5 skew-x-6" /></button>
+                  <button
+                    onClick={() =>
+                      setQuantity((prev) =>
+                        Math.max(1, Math.min(prev - 1, variationStock ?? 1))
+                      )
+                    }
+                    className="p-3 hover:bg-saprix-gray-100 transition-colors duration-200"
+                  >
+                    <Minus className="w-5 h-5 skew-x-6" />
+                  </button>
+                  <span className="px-6 py-3 font-inter font-semibold text-lg min-w-[60px] text-center skew-x-6">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setQuantity((prev) =>
+                        Math.min(prev + 1, variationStock ?? 9999)
+                      )
+                    }
+                    className="p-3 hover:bg-saprix-gray-100 transition-colors duration-200"
+                  >
+                    <Plus className="w-5 h-5 skew-x-6" />
+                  </button>
                 </div>
               </div>
 
+              {/* Stock indicator */}
+              <div>
+                {isOutOfStock ? (
+                  <span className="text-sm font-medium text-red-600">
+                    Agotado
+                  </span>
+                ) : (
+                  <span className="text-sm font-medium text-green-600">
+                    {variationStock && variationStock > 0
+                      ? `Quedan ${variationStock} unidades`
+                      : "En stock"}
+                  </span>
+                )}
+              </div>
+
+              {/* Add to Cart + Wishlist */}
               <div className="flex space-x-4">
-                <button onClick={addToCart} className="flex-1 bg-saprix-electric-blue hover:bg-saprix-electric-blue-dark text-white py-4 px-6 font-inter font-bold text-lg flex items-center justify-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 -skew-x-6">
+                <button
+                  onClick={addToCart}
+                  disabled={isOutOfStock}
+                  className={`flex-1 bg-saprix-electric-blue hover:bg-saprix-electric-blue-dark text-white py-4 px-6 font-inter font-bold text-lg flex items-center justify-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 -skew-x-6 ${isOutOfStock ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                >
                   <div className="flex items-center space-x-2 skew-x-6">
                     <ShoppingCart className="w-6 h-6" />
                     <span>Añadir al Carrito</span>
                   </div>
                 </button>
-                <button onClick={toggleWishlist} className={`w-16 h-16 border-2 flex items-center justify-center transition-all duration-200 -skew-x-6 ${isWishlisted ? "border-saprix-red-orange bg-saprix-red-orange text-white" : "border-saprix-gray-300 text-saprix-gray-600 hover:border-saprix-red-orange hover:text-saprix-red-orange"}`}>
-                  <Heart className={`w-6 h-6 skew-x-6 ${isWishlisted ? "fill-current" : ""}`} />
+                <button
+                  onClick={toggleWishlist}
+                  className={`w-16 h-16 border-2 flex items-center justify-center transition-all duration-200 -skew-x-6 ${isWishlisted
+                    ? "border-saprix-red-orange bg-saprix-red-orange text-white"
+                    : "border-saprix-gray-300 text-saprix-gray-600 hover:border-saprix-red-orange hover:text-saprix-red-orange"
+                    }`}
+                >
+                  <Heart
+                    className={`w-6 h-6 skew-x-6 ${isWishlisted ? "fill-current" : ""
+                      }`}
+                  />
                 </button>
               </div>
             </div>
 
+            {/* Warranty and Returns */}
             <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-saprix-electric-blue/10 flex items-center justify-center -skew-x-6"><Truck className="w-6 h-6 text-saprix-electric-blue skew-x-6" /></div>
-                <div><p className="font-inter font-semibold text-saprix-gray-900">Envío Gratis</p><p className="text-sm text-saprix-gray-600">En compras superiores a $150k</p></div>
-              </div>
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-saprix-electric-blue/10 flex items-center justify-center -skew-x-6"><Shield className="w-6 h-6 text-saprix-electric-blue skew-x-6" /></div>
                 <div><p className="font-inter font-semibold text-saprix-gray-900">Garantía Saprix</p><p className="text-sm text-saprix-gray-600">6 meses de garantía oficial</p></div>

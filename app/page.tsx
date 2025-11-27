@@ -49,8 +49,8 @@ export default async function HomePage() {
       {/* Main Hero Slider (Banners) */}
       <MainHeroSlider />
 
-      {/* New Collection Section (Old Hero) */}
-      <NewCollectionSection products={heroProducts} />
+      {/* New Collection Section (Old Hero) - Temporalmente deshabilitado */}
+      {/* <NewCollectionSection products={heroProducts} /> */}
 
       {/* Featured Categories */}
       {categories && categories.length > 0 && (

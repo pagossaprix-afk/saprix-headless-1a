@@ -10,6 +10,7 @@ import NewCollectionCountdown from "@/components/home/NewCollectionCountdown";
 import DixorFooter from "@/components/layout/Footer";
 import { CartProvider } from "@/context/CartContext";
 import CartDrawer from "@/components/cart/CartDrawer";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -55,6 +56,7 @@ export default function RootLayout({
               <DixorFooter />
               <CartDrawer />
             </div>
+            <Toaster position="top-right" richColors />
           </CartProvider>
         </ThemeProvider>
       </body>
