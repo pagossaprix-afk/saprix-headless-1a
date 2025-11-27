@@ -8,6 +8,7 @@ import { EffectCreative, Autoplay, Pagination, Navigation } from 'swiper/modules
 import type { Swiper as SwiperType } from 'swiper';
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
+import { ensureHttps } from '@/lib/utils';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -69,7 +70,7 @@ export default function NewCollectionSection({ products }: NewCollectionSectionP
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
                     {/* Left Content - Animated */}
-                    <div className="space-y-8">
+                    <div className="space-y-8 order-2 lg:order-1">
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={`content-${activeIndex}`}
@@ -146,7 +147,7 @@ export default function NewCollectionSection({ products }: NewCollectionSectionP
                                                 name: currentProduct.name,
                                                 price: price,
                                                 quantity: 1,
-                                                image: currentProduct.images[0]?.src || '/placeholder-image.png',
+                                                image: ensureHttps(currentProduct.images[0]?.src) || '/placeholder-image.png',
                                                 slug: currentProduct.slug
                                             });
                                         }}
@@ -181,7 +182,7 @@ export default function NewCollectionSection({ products }: NewCollectionSectionP
                         <div className="flex items-center gap-4 pt-8">
                             <button
                                 onClick={() => swiper?.slidePrev()}
-                                className="w-12 h-12 rounded-full bg-saprix-electric-blue text-white flex items-center justify-center hover:bg-saprix-electric-blue-dark transition-colors"
+                                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-saprix-electric-blue text-white flex items-center justify-center hover:bg-saprix-electric-blue-dark transition-colors"
                                 aria-label="Anterior"
                             >
                                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -190,7 +191,7 @@ export default function NewCollectionSection({ products }: NewCollectionSectionP
                             </button>
                             <button
                                 onClick={() => swiper?.slideNext()}
-                                className="w-12 h-12 rounded-full bg-saprix-electric-blue text-white flex items-center justify-center hover:bg-saprix-electric-blue-dark transition-colors"
+                                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-saprix-electric-blue text-white flex items-center justify-center hover:bg-saprix-electric-blue-dark transition-colors"
                                 aria-label="Siguiente"
                             >
                                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -212,7 +213,7 @@ export default function NewCollectionSection({ products }: NewCollectionSectionP
                     </div>
 
                     {/* Right Content - Swiper Slider */}
-                    <div className="relative">
+                    <div className="relative order-1 lg:order-2">
                         <Swiper
                             onSwiper={setSwiper}
                             onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
@@ -244,7 +245,7 @@ export default function NewCollectionSection({ products }: NewCollectionSectionP
                                             {product.images && product.images[0] ? (
                                                 <div className="relative w-full h-full group">
                                                     <Image
-                                                        src={product.images[0].src}
+                                                        src={ensureHttps(product.images[0].src)}
                                                         alt={product.images[0].alt || product.name}
                                                         fill
                                                         className="object-contain drop-shadow-2xl group-hover:scale-105 transition-transform duration-500"
@@ -285,7 +286,7 @@ export default function NewCollectionSection({ products }: NewCollectionSectionP
                                 >
                                     {product.images && product.images[0] ? (
                                         <Image
-                                            src={product.images[0].src}
+                                            src={ensureHttps(product.images[0].src)}
                                             alt={product.images[0].alt || product.name}
                                             width={64}
                                             height={64}

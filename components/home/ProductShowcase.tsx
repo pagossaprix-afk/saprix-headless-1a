@@ -83,7 +83,7 @@ export default function ProductShowcase({
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
-                        className="text-5xl sm:text-6xl font-bold mb-4 text-gray-900 dark:text-white font-inter italic"
+                        className="text-3xl sm:text-5xl lg:text-6xl font-bold mb-4 text-gray-900 dark:text-white font-inter italic"
                     >
                         {title}
                     </motion.h2>
@@ -92,7 +92,7 @@ export default function ProductShowcase({
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
+                        className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
                     >
                         {subtitle}
                     </motion.p>
