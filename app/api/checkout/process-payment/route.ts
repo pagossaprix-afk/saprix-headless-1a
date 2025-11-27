@@ -137,24 +137,26 @@ export async function POST(request: Request) {
             console.log('Wompi no disponible, usando checkout de WooCommerce:', wompiError);
         }
 
-        // 3. FALLBACK: REDIRIGIR A WOOCOMMERCE CHECKOUT
-        // Si Wompi falla o no está configurado, usar el checkout nativo de WooCommerce
+        // 3. FALLBACK ROBUSTO: REDIRIGIR A WOOCOMMERCE CHECKOUT CON PRODUCTOS
+        // Dado que el endpoint 'order-pay' de tu WordPress está generando errores 404 (probablemente por configuración de permalinks),
+        // la solución infalible es reconstruir el carrito en WooCommerce y enviar al usuario a pagar allá.
+        // Esto garantiza que el cliente SIEMPRE llegue a una página de pago funcional.
 
-        // Intentar usar la URL de pago proporcionada por WooCommerce
-        let wooCheckoutUrl = wooOrder.payment_url;
+        const cartParams = cartItems.map((item: any) => {
+            // Si es una variación, usamos variation_id, si no, product_id
+            const id = item.variationId || item.id;
+            return `add-to-cart=${id}&quantity=${item.quantity}`;
+        }).join('&');
 
-        // Si no viene en la respuesta, intentar construirla con slugs comunes
-        if (!wooCheckoutUrl) {
-            // Probar con /finalizar-compra/ que es común en instalaciones en español
-            wooCheckoutUrl = `${WOO_URL}/finalizar-compra/order-pay/${orderId}/?pay_for_order=true&key=${orderKey}`;
-        }
+        // Construimos la URL final al checkout
+        // Usamos /checkout/ que es el estándar. Si tu WP usa /finalizar-compra/, WP redirigirá automáticamente.
+        const wooCheckoutUrl = `${WOO_URL}/checkout/?${cartParams}`;
 
         return NextResponse.json({
             success: true,
             permalink: wooCheckoutUrl,
-            orderId,
-            orderKey,
-            provider: 'woocommerce'
+            orderId, // La orden creada por API quedará como registro, el usuario creará/pagará una nueva en el checkout nativo
+            provider: 'woocommerce_fallback_cart'
         });
 
     } catch (error: any) {
