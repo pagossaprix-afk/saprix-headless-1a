@@ -139,7 +139,15 @@ export async function POST(request: Request) {
 
         // 3. FALLBACK: REDIRIGIR A WOOCOMMERCE CHECKOUT
         // Si Wompi falla o no está configurado, usar el checkout nativo de WooCommerce
-        const wooCheckoutUrl = `${WOO_URL}/checkout/order-pay/${orderId}/?pay_for_order=true&key=${orderKey}`;
+
+        // Intentar usar la URL de pago proporcionada por WooCommerce
+        let wooCheckoutUrl = wooOrder.payment_url;
+
+        // Si no viene en la respuesta, intentar construirla con slugs comunes
+        if (!wooCheckoutUrl) {
+            // Probar con /finalizar-compra/ que es común en instalaciones en español
+            wooCheckoutUrl = `${WOO_URL}/finalizar-compra/order-pay/${orderId}/?pay_for_order=true&key=${orderKey}`;
+        }
 
         return NextResponse.json({
             success: true,
