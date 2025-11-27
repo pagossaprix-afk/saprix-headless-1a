@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { ensureHttps } from '@/lib/utils';
 
 interface Product {
     id: number;
@@ -67,7 +68,7 @@ export default function ProductShowcase({
             name: product.name,
             price: price,
             quantity: 1,
-            image: product.images[0]?.src || '/placeholder-image.png',
+            image: ensureHttps(product.images[0]?.src) || '/placeholder-image.png',
             slug: product.slug
         });
     };
@@ -121,7 +122,7 @@ export default function ProductShowcase({
                                 <div className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-800">
                                     {product.images && product.images[0] ? (
                                         <Image
-                                            src={product.images[0].src}
+                                            src={ensureHttps(product.images[0].src)}
                                             alt={product.images[0].alt || product.name}
                                             fill
                                             className="object-cover group-hover:scale-110 transition-transform duration-700"

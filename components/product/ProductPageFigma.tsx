@@ -7,6 +7,7 @@ import SizeGuide from "./SizeGuide";
 import GoogleReviews from "./GoogleReviews";
 import { buttonStyles, cardStyles, layout } from "@/lib/design-system";
 import { useCart } from "@/context/CartContext";
+import { ensureHttps } from "@/lib/utils";
 
 type Media = { src: string; alt?: string };
 type ColorOption = { option: string; variations: number[]; image?: string };
@@ -44,7 +45,9 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
     });
   }, [selectedColor, colorOptions, sizeOptions]);
 
-  const mainImages: Media[] = images && images.length > 0 ? images : [{ src: mapped?.image ?? "/placeholder-image.png" }];
+  const mainImages: Media[] = images && images.length > 0
+    ? images.map(img => ({ ...img, src: ensureHttps(img.src) }))
+    : [{ src: ensureHttps(mapped?.image) ?? "/placeholder-image.png" }];
 
   const priceFmt = useMemo(() => {
     const locale = "es-CO";
@@ -59,7 +62,7 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
   const { addItem } = useCart();
 
   function addToCart() {
-    const imagen = mainImages?.[0]?.src || "/placeholder-image.png";
+    const imagen = ensureHttps(mainImages?.[0]?.src) || "/placeholder-image.png";
     const nombre = mapped?.name || slug;
     const precio = Number(mapped?.final_price || mapped?.price || 0);
 

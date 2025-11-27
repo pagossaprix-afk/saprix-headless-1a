@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { ShoppingCart } from 'lucide-react';
 import { MouseEvent } from 'react';
+import { ensureHttps } from '@/lib/utils';
 
 interface ProductCardProps {
   id: number;
@@ -17,7 +18,7 @@ interface ProductCardProps {
 export default function ProductCard({ id, name, price, imageUrl, slug }: ProductCardProps) {
   const { addItem } = useCart();
   // Imagen 'placeholder' por si un guayo no tiene foto
-  const finalImageUrl = imageUrl || '/placeholder-image.png';
+  const finalImageUrl = ensureHttps(imageUrl) || '/placeholder-image.png';
 
   // Parse price string to number (remove non-numeric chars except dot)
   const numericPrice = parseFloat(price.replace(/[^0-9.]/g, '')) || 0;
