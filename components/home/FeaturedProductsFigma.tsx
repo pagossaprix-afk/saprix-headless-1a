@@ -86,7 +86,7 @@ function ProductCard({ product }: { product: Product }) {
       localStorage.setItem("cartItems", JSON.stringify(next));
       const totalQty = next.reduce((acc: number, it: any) => acc + (Number(it.quantity) || 1), 0);
       localStorage.setItem("cartCount", String(totalQty));
-    } catch {}
+    } catch { }
   }
 
   const formatPrice = (price: number) => {
@@ -109,7 +109,7 @@ function ProductCard({ product }: { product: Product }) {
       )}
       <div className="relative aspect-[4/3] w-full">
         <Image src={product.image} alt={product.name} fill className="object-contain" />
-        <div className={`absolute left-0 right-0 bottom-0 flex items-center ${isHovered ? 'opacity-100' : 'opacity-0'} transition-opacity`}> 
+        <div className={`absolute left-0 right-0 bottom-0 flex items-center ${isHovered ? 'opacity-100' : 'opacity-0'} transition-opacity`}>
           <button aria-label="Añadir al carrito" onClick={handleAddToCart} className="btn-primary h-10 flex-1 text-xs">
             <ShoppingCart className="mr-2 h-4 w-4" />
             AÑADIR AL CARRITO
@@ -122,7 +122,7 @@ function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="px-4 pb-4 flex-1">
         <div className="flex items-center justify-between border-b border-black/10 pb-2">
-          <Link href={`/producto/${product.id}`} className="text-sm font-extrabold tracking-wide text-black uppercase">
+          <Link href={`/producto/${product.id}`} className="text-sm font-inter font-extrabold tracking-wide text-black uppercase not-italic">
             {product.name}
           </Link>
           <span className="text-sm font-extrabold text-black">{formatPrice(product.price)}</span>

@@ -21,7 +21,7 @@ const jost = Jost({
   subsets: ["latin"],
   variable: "--font-jost",
   weight: ["400", "700", "900"],
-  style: ["normal", "italic"],
+  style: ["normal"],
   display: "swap",
 });
 

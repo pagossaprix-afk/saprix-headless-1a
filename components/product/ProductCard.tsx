@@ -52,7 +52,7 @@ export default function ProductCard({ id, name, price, imageUrl, slug }: Product
 
         {/* Contenido de la Tarjeta */}
         <div className="p-4 bg-white skew-x-6">
-          <h3 className="text-lg font-inter font-bold text-saprix-gray-900 mb-1 truncate">{name}</h3>
+          <h3 className="text-lg font-inter font-bold text-saprix-gray-900 mb-1 truncate not-italic">{name}</h3>
           <p className="text-saprix-gray-500 text-sm mb-3 font-inter">Fútbol Sala</p>
           <div className="flex items-center justify-between">
             <span className="text-xl font-inter font-bold text-saprix-electric-blue">

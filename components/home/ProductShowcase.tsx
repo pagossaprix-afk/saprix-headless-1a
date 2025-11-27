@@ -82,7 +82,7 @@ export default function ProductShowcase({
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
-                        className="text-5xl sm:text-6xl font-bold mb-4 text-gray-900 dark:text-white"
+                        className="text-5xl sm:text-6xl font-bold mb-4 text-gray-900 dark:text-white font-inter italic"
                     >
                         {title}
                     </motion.h2>
@@ -154,7 +154,7 @@ export default function ProductShowcase({
 
                                 {/* Product Info */}
                                 <div className="p-6">
-                                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white group-hover:text-saprix-electric-blue dark:group-hover:text-saprix-lime transition-colors line-clamp-2">
+                                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white group-hover:text-saprix-electric-blue dark:group-hover:text-saprix-lime transition-colors line-clamp-2 font-inter not-italic">
                                         {product.name}
                                     </h3>
 
