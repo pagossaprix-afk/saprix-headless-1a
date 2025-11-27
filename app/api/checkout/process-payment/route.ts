@@ -88,28 +88,19 @@ export async function POST(request: Request) {
                 const amountInCents = Math.round(cartTotal * 100);
                 const reference = `SAPRIX-${orderId}`;
 
+                // Usamos el endpoint de Payment Links que es el correcto para generar una URL de pago
                 const wompiPayload = {
+                    name: `Orden Saprix #${orderId}`,
+                    description: `Pago de orden #${orderId} en Saprix`,
+                    single_use: true,
+                    collect_shipping: false, // Ya recolectamos la info de envío
+                    currency: "COP",
                     amount_in_cents: amountInCents,
-                    currency: 'COP',
-                    customer_email: customer.email,
-                    reference: reference,
                     redirect_url: `${SITE_URL}/orden-confirmada?order_id=${orderId}`,
-                    customer_data: {
-                        phone_number: customer.phone,
-                        full_name: `${customer.firstName} ${customer.lastName}`,
-                        legal_id: customer.documentId,
-                        legal_id_type: 'CC'
-                    },
-                    shipping_address: {
-                        address_line_1: customer.address,
-                        city: customer.city,
-                        region: customer.state,
-                        country: 'CO',
-                        phone_number: customer.phone
-                    }
+                    sku: `ORD-${orderId}`
                 };
 
-                const wompiResponse = await fetch('https://production.wompi.co/v1/transactions', {
+                const wompiResponse = await fetch('https://production.wompi.co/v1/payment_links', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${WOMPI_PUBLIC_KEY}`,
@@ -120,17 +111,23 @@ export async function POST(request: Request) {
 
                 if (wompiResponse.ok) {
                     const wompiData = await wompiResponse.json();
-                    const permalink = wompiData.data?.permalink || wompiData.data?.payment_link_url;
+                    // El endpoint de payment_links devuelve 'permalink' en data.permalink
+                    const permalink = wompiData.data?.permalink;
 
                     if (permalink) {
+                        // Concatenamos los datos del cliente a la URL para pre-llenar (si Wompi lo soporta en el link)
+                        // O simplemente devolvemos el link limpio
                         return NextResponse.json({
                             success: true,
-                            permalink,
+                            permalink: `${permalink}?customer_email=${customer.email}`,
                             orderId,
                             reference,
                             provider: 'wompi'
                         });
                     }
+                } else {
+                    const errorData = await wompiResponse.json();
+                    console.error('Wompi API Error:', errorData);
                 }
             }
         } catch (wompiError) {
