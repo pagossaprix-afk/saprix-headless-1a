@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { ShoppingCart } from 'lucide-react';
 import { MouseEvent } from 'react';
+import { ensureHttps } from '@/lib/utils';
 
 interface ProductCardProps {
   id: number;
@@ -17,7 +18,7 @@ interface ProductCardProps {
 export default function ProductCard({ id, name, price, imageUrl, slug }: ProductCardProps) {
   const { addItem } = useCart();
   // Imagen 'placeholder' por si un guayo no tiene foto
-  const finalImageUrl = imageUrl || '/placeholder-image.png';
+  const finalImageUrl = ensureHttps(imageUrl) || '/placeholder-image.png';
 
   // Parse price string to number (remove non-numeric chars except dot)
   const numericPrice = parseFloat(price.replace(/[^0-9.]/g, '')) || 0;
@@ -52,7 +53,7 @@ export default function ProductCard({ id, name, price, imageUrl, slug }: Product
 
         {/* Contenido de la Tarjeta */}
         <div className="p-4 bg-white skew-x-6">
-          <h3 className="text-lg font-inter font-bold text-saprix-gray-900 mb-1 truncate">{name}</h3>
+          <h3 className="text-lg font-inter font-bold text-saprix-gray-900 mb-1 truncate not-italic">{name}</h3>
           <p className="text-saprix-gray-500 text-sm mb-3 font-inter">Fútbol Sala</p>
           <div className="flex items-center justify-between">
             <span className="text-xl font-inter font-bold text-saprix-electric-blue">

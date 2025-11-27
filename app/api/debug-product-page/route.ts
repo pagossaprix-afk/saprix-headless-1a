@@ -89,7 +89,7 @@ export async function GET(req: Request) {
                 name: product.name,
                 slug: product.slug,
                 price: product.price,
-                images: product.images?.map(img => ({ id: img.id, src: img.src, name: img.name })),
+                images: product.images?.map(img => ({ src: img.src, alt: img.alt })),
             },
             mapped_product: {
                 id: mappedProduct.id,

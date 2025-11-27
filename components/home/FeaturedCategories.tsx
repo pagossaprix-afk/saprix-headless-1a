@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Jost } from 'next/font/google';
 
-const jost = Jost({ subsets: ['latin'], weight: ['400','700','900'], style: ['normal','italic'] });
+const jost = Jost({ subsets: ['latin'], weight: ['400', '700', '900'], style: ['normal'] });
 
 interface Category {
     id: number;
@@ -20,31 +20,31 @@ interface FeaturedCategoriesProps {
 }
 
 export default function FeaturedCategories({ categories }: FeaturedCategoriesProps) {
-  // Tomar las primeras 4 categorías
-  const displayCategories = categories.slice(0, 4);
+    // Tomar las primeras 4 categorías
+    const displayCategories = categories.slice(0, 4);
 
-  const mediaByName: Record<string, { src: string; kind: "image" | "video"; alt?: string }> = {
-    "accesorios deportivos futsal": {
-      src: "/ACCESORIOS/Guantes Saprix Futsal Microfutbol.mp4",
-      kind: "video",
-      alt: "Guantes Saprix Futsal",
-    },
-    "balones futsal": {
-      src: "/ACCESORIOS/Balon Saprix Futsal Microfutbol.png",
-      kind: "image",
-      alt: "Balón Saprix Futsal",
-    },
-    "berlin": {
-      src: "/ROMA/Zapatillas Roma Saprix Futsal Microfutbol (1).mp4",
-      kind: "video",
-      alt: "Zapatillas Roma (Video)",
-    },
-    "clásicas": {
-      src: "/ROMA/Zapatillas Roma Saprix Futsal Microfutbol (2).mp4",
-      kind: "video",
-      alt: "Zapatillas Roma (Video)",
-    },
-  };
+    const mediaByName: Record<string, { src: string; kind: "image" | "video"; alt?: string }> = {
+        "accesorios deportivos futsal": {
+            src: "/ACCESORIOS/Guantes Saprix Futsal Microfutbol.mp4",
+            kind: "video",
+            alt: "Guantes Saprix Futsal",
+        },
+        "balones futsal": {
+            src: "/ACCESORIOS/Balon Saprix Futsal Microfutbol.png",
+            kind: "image",
+            alt: "Balón Saprix Futsal",
+        },
+        "berlin": {
+            src: "/ROMA/Zapatillas Roma Saprix Futsal Microfutbol (1).mp4",
+            kind: "video",
+            alt: "Zapatillas Roma (Video)",
+        },
+        "clásicas": {
+            src: "/ROMA/Zapatillas Roma Saprix Futsal Microfutbol (2).mp4",
+            kind: "video",
+            alt: "Zapatillas Roma (Video)",
+        },
+    };
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -146,9 +146,9 @@ export default function FeaturedCategories({ categories }: FeaturedCategoriesPro
                                             </div>
                                         );
                                     })()}
-                                
-                                {/* Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                                    {/* Gradient Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                 </div>
 
                                 {/* Content */}

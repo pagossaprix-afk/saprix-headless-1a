@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { getProducts } from '@/lib/woocommerce';
 import { getCategoryBySlug } from '@/lib/category-utils';
 import { AddToCartButton } from '@/components/shop/AddToCartButton';
+import { ensureHttps } from '@/lib/utils';
 
 export type SortValue = 'newest' | 'price-asc' | 'price-desc' | 'popular';
 
@@ -124,7 +125,7 @@ export async function ProductGridNike({ searchParams }: ProductGridNikeProps) {
                                 <div className="relative aspect-square mb-4 bg-gray-100 dark:bg-gray-800 overflow-hidden">
                                     {product.images?.[0] ? (
                                         <Image
-                                            src={product.images[0].src}
+                                            src={ensureHttps(product.images[0].src)}
                                             alt={product.name}
                                             fill
                                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

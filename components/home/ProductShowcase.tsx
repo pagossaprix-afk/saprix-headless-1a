@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { ensureHttps } from '@/lib/utils';
 
 interface Product {
     id: number;
@@ -67,7 +68,7 @@ export default function ProductShowcase({
             name: product.name,
             price: price,
             quantity: 1,
-            image: product.images[0]?.src || '/placeholder-image.png',
+            image: ensureHttps(product.images[0]?.src) || '/placeholder-image.png',
             slug: product.slug
         });
     };
@@ -82,7 +83,7 @@ export default function ProductShowcase({
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
-                        className="text-5xl sm:text-6xl font-bold mb-4 text-gray-900 dark:text-white"
+                        className="text-3xl sm:text-5xl lg:text-6xl font-bold mb-4 text-gray-900 dark:text-white font-inter italic"
                     >
                         {title}
                     </motion.h2>
@@ -91,7 +92,7 @@ export default function ProductShowcase({
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
+                        className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
                     >
                         {subtitle}
                     </motion.p>
@@ -121,7 +122,7 @@ export default function ProductShowcase({
                                 <div className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-800">
                                     {product.images && product.images[0] ? (
                                         <Image
-                                            src={product.images[0].src}
+                                            src={ensureHttps(product.images[0].src)}
                                             alt={product.images[0].alt || product.name}
                                             fill
                                             className="object-cover group-hover:scale-110 transition-transform duration-700"
@@ -154,7 +155,7 @@ export default function ProductShowcase({
 
                                 {/* Product Info */}
                                 <div className="p-6">
-                                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white group-hover:text-saprix-electric-blue dark:group-hover:text-saprix-lime transition-colors line-clamp-2">
+                                    <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white group-hover:text-saprix-electric-blue dark:group-hover:text-saprix-lime transition-colors line-clamp-2 font-inter not-italic">
                                         {product.name}
                                     </h3>
 

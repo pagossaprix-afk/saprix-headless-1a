@@ -7,6 +7,7 @@ import SizeGuide from "./SizeGuide";
 import GoogleReviews from "./GoogleReviews";
 import { buttonStyles, cardStyles, layout } from "@/lib/design-system";
 import { useCart } from "@/context/CartContext";
+import { ensureHttps } from "@/lib/utils";
 
 type Media = { src: string; alt?: string };
 type ColorOption = { option: string; variations: number[]; image?: string };
@@ -57,10 +58,9 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
   const isOutOfStock =
     variationStock === 0 || selectedVariation?.stock_status === "outofstock";
 
-  const mainImages: Media[] =
-    images && images.length > 0
-      ? images
-      : [{ src: mapped?.image ?? "/placeholder-image.png" }];
+  const mainImages: Media[] = images && images.length > 0
+    ? images.map(img => ({ ...img, src: ensureHttps(img.src) }))
+    : [{ src: ensureHttps(mapped?.image) ?? "/placeholder-image.png" }];
 
   const priceFmt = useMemo(() => {
     const locale = "es-CO";
@@ -83,7 +83,7 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
   const { addItem } = useCart();
 
   function addToCart() {
-    const imagen = mainImages?.[0]?.src || "/placeholder-image.png";
+    const imagen = ensureHttps(mainImages?.[0]?.src) || "/placeholder-image.png";
     const nombre = mapped?.name || slug;
     const precio = Number(mapped?.final_price || mapped?.price || 0);
 
@@ -387,28 +387,39 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
               </div>
             </div>
 
-            {/* Warranty and Returns */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-saprix-electric-blue/10 flex items-center justify-center -skew-x-6"><Shield className="w-6 h-6 text-saprix-electric-blue skew-x-6" /></div>
-                <div><p className="font-inter font-semibold text-saprix-gray-900">Garantía Saprix</p><p className="text-sm text-saprix-gray-600">6 meses de garantía oficial</p></div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-saprix-electric-blue/10 flex items-center justify-center -skew-x-6"><RotateCcw className="w-6 h-6 text-saprix-electric-blue skew-x-6" /></div>
-                <div><p className="font-inter font-semibold text-saprix-gray-900">Devoluciones</p><p className="text-sm text-saprix-gray-600">30 días para devoluciones</p></div>
-              </div>
-            </div>
-          </div>
+<<<<<<< HEAD
+  {/* Warranty and Returns */ }
+  <div className="space-y-4">
+    <div className="flex items-center space-x-3">
+      <div className="w-12 h-12 bg-saprix-electric-blue/10 flex items-center justify-center -skew-x-6"><Shield className="w-6 h-6 text-saprix-electric-blue skew-x-6" /></div>
+      <div><p className="font-inter font-semibold text-saprix-gray-900">Garantía Saprix</p><p className="text-sm text-saprix-gray-600">6 meses de garantía oficial</p></div>
+=======
+            <div className="grid grid-cols-3 gap-2">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-saprix-electric-blue/10 flex items-center justify-center -skew-x-6 flex-shrink-0"><Truck className="w-4 h-4 text-saprix-electric-blue skew-x-6" /></div>
+          <div><p className="font-inter font-semibold text-saprix-gray-900 text-xs leading-tight">Envío Gratis</p><p className="text-[10px] text-saprix-gray-600 leading-tight">En compras +$150k</p></div>
         </div>
-
-
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-saprix-electric-blue/10 flex items-center justify-center -skew-x-6 flex-shrink-0"><Shield className="w-4 h-4 text-saprix-electric-blue skew-x-6" /></div>
+          <div><p className="font-inter font-semibold text-saprix-gray-900 text-xs leading-tight">Garantía Saprix</p><p className="text-[10px] text-saprix-gray-600 leading-tight">6 meses oficial</p></div>
+>>>>>>> 9252150b5728ab95b157b548825b644de79e942b
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-saprix-electric-blue/10 flex items-center justify-center -skew-x-6 flex-shrink-0"><RotateCcw className="w-4 h-4 text-saprix-electric-blue skew-x-6" /></div>
+          <div><p className="font-inter font-semibold text-saprix-gray-900 text-xs leading-tight">Devoluciones</p><p className="text-[10px] text-saprix-gray-600 leading-tight">30 días</p></div>
+        </div>
       </div>
-      <SizeGuide
-        isOpen={isSizeGuideOpen}
-        onClose={() => setIsSizeGuideOpen(false)}
-        productName={mapped?.name || slug}
-        categories={mapped?.categories?.map((c: any) => c.name) || []}
-      />
+    </div>
+  </div>
+
+
+      </div >
+    <SizeGuide
+      isOpen={isSizeGuideOpen}
+      onClose={() => setIsSizeGuideOpen(false)}
+      productName={mapped?.name || slug}
+      categories={mapped?.categories?.map((c: any) => c.name) || []}
+    />
     </div >
   );
 }
