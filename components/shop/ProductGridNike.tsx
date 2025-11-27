@@ -121,7 +121,7 @@ export async function ProductGridNike({ searchParams }: ProductGridNikeProps) {
                     return (
                         <div key={product.id} className="group">
                             <Link href={productUrl} className="block">
-                                <div className="relative aspect-square mb-4 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+                                <div className="relative aspect-square mb-4 bg-gray-100 dark:bg-gray-800 overflow-hidden">
                                     {product.images?.[0] ? (
                                         <Image
                                             src={product.images[0].src}

@@ -121,11 +121,11 @@ export default function DixorHeroSlider({ products }: DixorHeroSliderProps) {
                                 >
                                     <Link
                                         href={`/producto/${currentProduct.slug}`}
-                                        className="group px-8 py-4 bg-saprix-electric-blue text-white font-semibold rounded-full hover:bg-saprix-electric-blue-dark transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl"
+                                        className="group px-8 py-4 bg-saprix-electric-blue text-white font-semibold rounded-none -skew-x-6 hover:bg-saprix-electric-blue-dark transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl"
                                     >
-                                        Comprar Ahora
+                                        <span className="skew-x-6">Comprar Ahora</span>
                                         <svg
-                                            className="w-5 h-5 group-hover:translate-x-1 transition-transform"
+                                            className="w-5 h-5 group-hover:translate-x-1 transition-transform skew-x-6"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             stroke="currentColor"
@@ -135,9 +135,9 @@ export default function DixorHeroSlider({ products }: DixorHeroSliderProps) {
                                     </Link>
                                     <Link
                                         href="/tienda"
-                                        className="px-8 py-4 bg-saprix-lime text-black font-semibold rounded-full hover:bg-saprix-lime/80 transition-all duration-300 shadow-lg hover:shadow-xl"
+                                        className="px-8 py-4 bg-saprix-lime text-black font-semibold rounded-none -skew-x-6 hover:bg-saprix-lime/80 transition-all duration-300 shadow-lg hover:shadow-xl"
                                     >
-                                        Ver Colección
+                                        <span className="skew-x-6">Ver Colección</span>
                                     </Link>
                                 </motion.div>
 
@@ -244,7 +244,7 @@ export default function DixorHeroSlider({ products }: DixorHeroSliderProps) {
                                                     />
                                                 </div>
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-3xl">
+                                                <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
                                                     <div className="text-center text-gray-400">
                                                         <svg className="w-32 h-32 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path
@@ -270,7 +270,7 @@ export default function DixorHeroSlider({ products }: DixorHeroSliderProps) {
                                 <button
                                     key={product.id}
                                     onClick={() => swiper?.slideTo(index)}
-                                    className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${index === activeIndex
+                                    className={`w-16 h-16 overflow-hidden border-2 transition-all ${index === activeIndex
                                         ? 'border-saprix-electric-blue scale-110 shadow-lg shadow-saprix-electric-blue/50'
                                         : 'border-gray-200 dark:border-gray-700 opacity-50 hover:opacity-100'
                                         }`}

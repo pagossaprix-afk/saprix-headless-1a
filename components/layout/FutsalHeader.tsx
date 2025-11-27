@@ -238,8 +238,8 @@ export default function FutsalHeader() {
                       setShowResults(false);
                     }}
                   >
-                    <div className="group flex w-full items-center rounded-full border border-gray-200 bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700 px-4 py-2 transition-all duration-300 focus-within:bg-white dark:focus-within:bg-gray-900 focus-within:border-saprix-electric-blue focus-within:ring-4 focus-within:ring-saprix-electric-blue/10 shadow-sm hover:shadow-md">
-                      <Search size={18} className="text-gray-400 group-focus-within:text-saprix-electric-blue transition-colors" />
+                    <div className="group flex w-full items-center border border-gray-200 bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700 px-4 py-2 transition-all duration-300 focus-within:bg-white dark:focus-within:bg-gray-900 focus-within:border-saprix-electric-blue focus-within:ring-4 focus-within:ring-saprix-electric-blue/10 shadow-sm hover:shadow-md -skew-x-6">
+                      <Search size={18} className="text-gray-400 group-focus-within:text-saprix-electric-blue transition-colors skew-x-6" />
                       <input
                         type="text"
                         name="q"
@@ -249,13 +249,14 @@ export default function FutsalHeader() {
                         onFocus={() => {
                           if (searchResults.length > 0) setShowResults(true);
                         }}
-                        className="h-9 flex-1 border-none bg-transparent px-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none font-medium"
+                        className="h-9 flex-1 border-none bg-transparent px-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none font-medium skew-x-6"
                         autoComplete="off"
+                        suppressHydrationWarning={true}
                       />
                       {isSearching ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-saprix-electric-blue"></div>
+                        <div className="animate-spin h-4 w-4 border-b-2 border-saprix-electric-blue skew-x-6"></div>
                       ) : searchQuery && (
-                        <button type="button" onClick={() => { setSearchQuery(""); setSearchResults([]); }} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                        <button type="button" onClick={() => { setSearchQuery(""); setSearchResults([]); }} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 skew-x-6">
                           <X size={14} />
                         </button>
                       )}
@@ -359,12 +360,12 @@ export default function FutsalHeader() {
                           as={motion.button}
                           whileHover={{ scale: 1.05 }}
                           aria-label="Cuenta"
-                          className={`flex items-center gap-2 rounded-full border p-1.5 pr-3 transition-all ${open
+                          className={`flex items-center gap-2 rounded-none border p-1.5 pr-3 transition-all ${open
                             ? 'border-saprix-electric-blue bg-saprix-electric-blue/5 text-saprix-electric-blue'
                             : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                             }`}
                         >
-                          <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
+                          <div className="w-7 h-7 rounded-none bg-gray-100 flex items-center justify-center">
                             <User size={16} className="text-gray-600" />
                           </div>
                           <span className="text-xs font-bold">Mi Cuenta</span>
@@ -373,7 +374,7 @@ export default function FutsalHeader() {
 
                         <AnimatePresence>
                           {open && (
-                            <Popover.Panel static className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-2xl ring-1 ring-black/5">
+                            <Popover.Panel static className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-none bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-2xl ring-1 ring-black/5">
                               <motion.div
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -449,7 +450,7 @@ export default function FutsalHeader() {
                   <>
                     <Popover.Button as={motion.button}
                       whileHover={{ scale: 1.05 }}
-                      className="flex shrink-0 items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-md hover:shadow-lg md:px-4 md:text-base"
+                      className="flex shrink-0 items-center gap-2 rounded-none bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-md hover:shadow-lg md:px-4 md:text-base"
                     >
                       <List size={18} className="text-saprix-red-orange" />
                       <span>Categorías de productos</span>
@@ -471,7 +472,11 @@ export default function FutsalHeader() {
                             className="container mx-auto px-6 py-6"
                           >
                             {/* Header del megamenu - Compacto pero con identidad */}
-                            <div className="mb-5 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                            <div className="mb-5 pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between relative">
+                              <Popover.Button className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 inline-flex items-center gap-2 px-4 py-2 rounded-none border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50">
+                                <X size={16} />
+                                <span>Cerrar</span>
+                              </Popover.Button>
                               <div>
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-tight flex items-center gap-2">
                                   Zapatillas Saprix
@@ -665,7 +670,6 @@ export default function FutsalHeader() {
                 { name: "Inicio", href: "/" },
                 { name: "Tienda", href: "/productos" },
                 { name: "Blog", href: "/blog" },
-                { name: "Páginas", href: "/pages" },
                 { name: "Contacto", href: "/contacto" },
               ].map((item, idx, arr) => (
                 <div key={item.name} className="flex items-center">

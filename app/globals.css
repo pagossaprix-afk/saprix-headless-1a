@@ -5,8 +5,8 @@
   --color-saprix-indigo: #233775;
   --color-saprix-white: #ffffff;
 
-  /* Fuente Inter desde next/font (variable CSS) */
   --font-inter: var(--font-inter), sans-serif;
+  --font-jost: var(--font-jost), sans-serif;
 }
 
 @plugin "tailwindcss-animate";
@@ -130,6 +130,10 @@
   body {
     @apply bg-background text-foreground;
   }
+  h1, h2, h3 {
+    font-family: var(--font-jost);
+    font-style: italic;
+  }
 }
 
 @layer components {
@@ -152,18 +156,24 @@
     background-color: #3B00FF; /* saprix-electric-blue */
     color: #FFFFFF;
   }
-  .saprix-h1 {
-    @apply text-5xl lg:text-6xl font-extrabold tracking-tight;
-    color: #1F2937;
-  }
-  .saprix-h2 {
-    @apply text-4xl lg:text-5xl font-bold tracking-tight;
-    color: #1F2937;
-  }
-  .saprix-h3 {
-    @apply text-2xl lg:text-3xl font-bold;
-    color: #1F2937;
-  }
+.saprix-h1 {
+  @apply text-5xl lg:text-6xl font-extrabold tracking-tight;
+  color: #1F2937;
+  font-family: var(--font-jost);
+  font-style: italic;
+}
+.saprix-h2 {
+  @apply text-4xl lg:text-5xl font-bold tracking-tight;
+  color: #1F2937;
+  font-family: var(--font-jost);
+  font-style: italic;
+}
+.saprix-h3 {
+  @apply text-2xl lg:text-3xl font-bold;
+  color: #1F2937;
+  font-family: var(--font-jost);
+  font-style: italic;
+}
   .saprix-body {
     @apply text-base lg:text-lg leading-relaxed;
     color: #6B7280;

@@ -13,12 +13,11 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 
 const banners = [
-    { id: 1, src: "/banners/1.png", alt: "Saprix Colección 2025", title: "Nueva Colección 2025", subtitle: "Domina la cancha", link: "/tienda?new=true" },
-    { id: 2, src: "/banners/2.png", alt: "Zapatillas Profesionales", title: "Rendimiento Superior", subtitle: "Tecnología de punta", link: "/tienda" },
-    { id: 3, src: "/banners/3.png", alt: "Estilo y Confort", title: "Estilo Único", subtitle: "Diseñadas para ganar", link: "/tienda" },
-    { id: 4, src: "/banners/4.png", alt: "Fútbol Sala", title: "Pasión por el Futsal", subtitle: "La marca de los campeones", link: "/tienda" },
-    { id: 5, src: "/banners/5.png", alt: "Edición Limitada", title: "Edición Limitada", subtitle: "Exclusividad total", link: "/tienda?featured=true" },
-    { id: 6, src: "/banners/6.png", alt: "Ofertas Especiales", title: "Ofertas de Temporada", subtitle: "Precios increíbles", link: "/ofertas" },
+    { id: 1, src: "/banners/Zapatillas Saprix - .ref Tokio Negra.webp", alt: "Zapatillas Saprix Tokio Negra", title: "Rendimiento Superior Tokio", subtitle: "Control y tracción en negro", link: "/tienda" },
+    { id: 2, src: "/banners/Zapatillas Saprix - ref Tokio Morada.webp", alt: "Zapatillas Saprix Tokio Morada", title: "Estilo Único Tokio", subtitle: "Diseñadas para destacar en morado", link: "/tienda" },
+    { id: 3, src: "/banners/Zapatillas Saprix - ref Londres.webp", alt: "Zapatillas Saprix Londres", title: "Pasión por el Futsal Londres", subtitle: "La marca de los campeones", link: "/tienda" },
+    { id: 4, src: "/banners/Zapatillas Saprix - ref Roma.webp", alt: "Zapatillas Saprix Roma", title: "Roma Edición Limitada", subtitle: "Exclusividad total y diseño premium", link: "/tienda?featured=true" },
+    { id: 5, src: "/banners/Zapatillas Saprix - Accesorios Deportivos Guantes Mochilas Balones.webp", alt: "Accesorios Deportivos Saprix", title: "Accesorios Deportivos", subtitle: "Guantes, mochilas y balones", link: "/ofertas" },
 ];
 
 export default function MainHeroSlider() {
@@ -82,10 +81,10 @@ export default function MainHeroSlider() {
                                 >
                                     <Link
                                         href={banner.link}
-                                        className="inline-flex items-center gap-2 px-8 py-4 bg-saprix-electric-blue hover:bg-blue-700 text-white font-bold rounded-full transition-all transform hover:scale-105 shadow-lg hover:shadow-saprix-electric-blue/50"
+                                        className="inline-flex items-center gap-2 px-8 py-4 bg-saprix-electric-blue hover:bg-blue-700 text-white font-bold rounded-none -skew-x-6 transition-all transform hover:scale-105 shadow-lg hover:shadow-saprix-electric-blue/50"
                                     >
-                                        Ver Colección
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <span className="skew-x-6">Ver Colección</span>
+                                        <svg className="w-5 h-5 skew-x-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                         </svg>
                                     </Link>

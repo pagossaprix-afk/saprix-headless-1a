@@ -115,7 +115,7 @@ export default function ProductShowcase({
                         >
                             <Link
                                 href={`/producto/${product.slug}`}
-                                className="group block bg-white dark:bg-gray-900/40 dark:backdrop-blur-md dark:border dark:border-white/10 rounded-3xl overflow-hidden hover:shadow-2xl dark:hover:shadow-saprix-electric-blue/30 dark:hover:border-saprix-electric-blue/50 transition-all duration-500"
+                                className="group block bg-white dark:bg-gray-900/40 dark:backdrop-blur-md dark:border dark:border-white/10 overflow-hidden hover:shadow-2xl dark:hover:shadow-saprix-electric-blue/30 dark:hover:border-saprix-electric-blue/50 transition-all duration-500"
                             >
                                 {/* Image Container */}
                                 <div className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-800">

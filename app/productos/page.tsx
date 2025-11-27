@@ -52,10 +52,16 @@ export default async function ProductosPage({
                                     tags={sidebarData.tags}
                                     attributes={sidebarData.attributes}
                                     selected={{
-                                        category: searchParams.categoria ? [searchParams.categoria as string] : undefined,
-                                        tag: searchParams.tag ? [searchParams.tag as string] : undefined,
+                                        category: typeof searchParams.categoria === "string" ? [searchParams.categoria as string] : undefined,
+                                        tag: typeof searchParams.tag === "string" ? [searchParams.tag as string] : undefined,
                                     }}
-                                    currentParams={searchParams as Record<string, string>}
+                                    currentParams={{
+                                        ...(typeof searchParams.sort === "string" ? { sort: searchParams.sort as string } : {}),
+                                        ...(typeof searchParams.page === "string" ? { page: searchParams.page as string } : {}),
+                                        ...(typeof searchParams.per_page === "string" ? { per_page: searchParams.per_page as string } : {}),
+                                        ...(typeof searchParams.categoria === "string" ? { category: searchParams.categoria as string } : {}),
+                                        ...(typeof searchParams.tag === "string" ? { tag: searchParams.tag as string } : {}),
+                                      }}
                                 />
                             </Suspense>
                         </div>

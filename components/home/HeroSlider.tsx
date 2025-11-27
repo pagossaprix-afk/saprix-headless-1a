@@ -65,9 +65,9 @@ export default function HeroSlider() {
                       <p className="text-white/80 text-sm md:text-base">Ediciones limitadas disponibles a precio especial.</p>
                       <a
                         href={s.href}
-                        className="inline-flex items-center justify-center self-end bg-[#2500ff] px-5 py-2 text-sm font-semibold text-white shadow-md hover:opacity-90"
+                        className="inline-flex items-center justify-center self-end bg-[#2500ff] px-5 py-2 text-sm font-semibold text-white shadow-md hover:opacity-90 rounded-none -skew-x-6"
                       >
-                        {s.cta}
+                        <span className="skew-x-6">{s.cta}</span>
                       </a>
                     </div>
                   </div>

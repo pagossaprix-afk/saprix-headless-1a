@@ -19,7 +19,7 @@ export default function BrandStory() {
                     >
                         <div className="grid grid-cols-2 gap-4">
                             {/* Large image - Banner World */}
-                            <div className="col-span-2 relative aspect-[16/10] rounded-3xl overflow-hidden bg-gray-100 dark:bg-gray-800 group">
+                            <div className="col-span-2 relative aspect-[16/10] rounded-none overflow-hidden bg-gray-100 dark:bg-gray-800 group">
                                 <Image
                                     src="/banners/proximamente coleccion world.png"
                                     alt="Saprix Colección World"
@@ -30,7 +30,7 @@ export default function BrandStory() {
                             </div>
 
                             {/* Two smaller images */}
-                            <div className="relative aspect-square rounded-3xl overflow-hidden bg-gray-100 dark:bg-gray-800 group">
+                            <div className="relative aspect-square rounded-none overflow-hidden bg-gray-100 dark:bg-gray-800 group">
                                 <Image
                                     src="/ACCESORIOS/Balon Saprix Futsal Microfutbol.png"
                                     alt="Saprix Equipment"
@@ -38,9 +38,9 @@ export default function BrandStory() {
                                     className="object-contain p-4 transition-transform duration-700 group-hover:scale-110"
                                 />
                             </div>
-                            <div className="relative aspect-square rounded-3xl overflow-hidden bg-gray-100 dark:bg-gray-800 group">
+                            <div className="relative aspect-square rounded-none overflow-hidden bg-gray-100 dark:bg-gray-800 group">
                                 <Image
-                                    src="/LONDRES/Zapatillas Londres Saprix Futsal Microfutbol  (5).png"
+                                    src="/LONDRES/Zapatillas Londres Saprix Futsal Microfutbol (5).png"
                                     alt="Saprix Technology"
                                     fill
                                     className="object-contain p-4 transition-transform duration-700 group-hover:scale-110"

@@ -3,6 +3,9 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Jost } from 'next/font/google';
+
+const jost = Jost({ subsets: ['latin'], weight: ['400','700','900'], style: ['normal','italic'] });
 
 interface Category {
     id: number;
@@ -75,7 +78,7 @@ export default function FeaturedCategories({ categories }: FeaturedCategoriesPro
                     transition={{ duration: 0.6 }}
                     className="text-center mb-16"
                 >
-                    <h2 className="text-5xl sm:text-6xl font-bold mb-4 text-gray-900 dark:text-white">
+                    <h2 className={`${jost.className} text-5xl sm:text-6xl font-bold mb-4 text-gray-900 dark:text-white`}>
                         Explora por Categoría
                     </h2>
                     <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">

@@ -231,7 +231,13 @@ function MegaMenuCategories() {
             {open && (
               <Popover.Panel static className="absolute left-0 z-50 mt-3 w-[680px] overflow-hidden rounded-lg border border-white/10 bg-white text-gray-800 shadow-xl">
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.15 }} className="p-6">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="flex justify-center">
+                  <Popover.Button className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                    <X size={16} />
+                    <span>Cerrar</span>
+                  </Popover.Button>
+                </div>
+                <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
                   {[
                     { name: "Computadores", href: "/tienda/computadores", Icon: IoLaptopOutline, color: "text-blue-600" },
                     { name: "Accesorios", href: "/tienda/accesorios", Icon: IoHeadsetOutline, color: "text-pink-500" },

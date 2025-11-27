@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Jost } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import CustomCursor from "@/components/ui/CustomCursor";
@@ -17,6 +17,14 @@ const inter = Inter({
   display: "swap",
 });
 
+const jost = Jost({
+  subsets: ["latin"],
+  variable: "--font-jost",
+  weight: ["400", "700", "900"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Saprix | Calzado Deportivo Premium",
   description: "Tienda oficial de Saprix. Encuentra los mejores guayos y zapatillas deportivas.",
@@ -29,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${inter.variable} font-inter bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300`} suppressHydrationWarning>
+      <body className={`${inter.variable} ${jost.variable} font-inter bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300`} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

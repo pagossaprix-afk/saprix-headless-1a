@@ -3,10 +3,29 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Configuramos next/image para cargar imágenes remotas desde WordPress
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
         hostname: "pagos.saprix.com.co",
+        port: "",
+        pathname: "/wp-content/uploads/**",
+      },
+      {
+        protocol: "http",
+        hostname: "pagos.saprix.com.co",
+        port: "",
+        pathname: "/wp-content/uploads/**",
+      },
+      {
+        protocol: "https",
+        hostname: "www.pagos.saprix.com.co",
+        port: "",
+        pathname: "/wp-content/uploads/**",
+      },
+      {
+        protocol: "http",
+        hostname: "www.pagos.saprix.com.co",
         port: "",
         pathname: "/wp-content/uploads/**",
       },

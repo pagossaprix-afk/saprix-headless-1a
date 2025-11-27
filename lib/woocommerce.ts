@@ -17,14 +17,9 @@ let _api: API | null = null;
 export function getWooApi(): API {
   if (_api) return _api;
 
-  // TEMP: Hardcoded fallback for localhost development
-  const LOCALHOST_URL = "https://pagos.saprix.com.co";
-  const LOCALHOST_CK = "ck_88721898d82f29e0f8664d7e3316aa460340f587";
-  const LOCALHOST_CS = "cs_37ebd5161dd1ed62e199570e702fb7d123454569";
-
-  const url = process.env.NEXT_PUBLIC_WORDPRESS_URL || LOCALHOST_URL;
-  const consumerKey = process.env.WOOCOMMERCE_CONSUMER_KEY || LOCALHOST_CK;
-  const consumerSecret = process.env.WOOCOMMERCE_CONSUMER_SECRET || LOCALHOST_CS;
+  const url = process.env.WOOCOMMERCE_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_URL || "https://pagos.saprix.com.co";
+  const consumerKey = process.env.WOOCOMMERCE_CONSUMER_KEY || "";
+  const consumerSecret = process.env.WOOCOMMERCE_CONSUMER_SECRET || "";
 
   _api = new API({ url, consumerKey, consumerSecret, version: "wc/v3" });
   return _api;
@@ -175,14 +170,9 @@ export async function getSizeOptionsFromVariations(productId: number): Promise<A
 // -------- Catálogo global: categorías, etiquetas y atributos --------
 
 function buildUrl(endpoint: string, params: Record<string, unknown> = {}): string {
-  // TEMP: Hardcoded fallback for localhost development due to .env file corruption issues
-  const LOCALHOST_URL = "https://pagos.saprix.com.co";
-  const LOCALHOST_CK = "ck_88721898d82f29e0f8664d7e3316aa460340f587";
-  const LOCALHOST_CS = "cs_37ebd5161dd1ed62e199570e702fb7d123454569";
-
-  const base = (process.env.NEXT_PUBLIC_WORDPRESS_URL || LOCALHOST_URL).replace(/\/$/, "");
-  const ck = process.env.WOOCOMMERCE_CONSUMER_KEY || LOCALHOST_CK;
-  const cs = process.env.WOOCOMMERCE_CONSUMER_SECRET || LOCALHOST_CS;
+  const base = (process.env.WOOCOMMERCE_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_URL || "https://pagos.saprix.com.co").replace(/\/$/, "");
+  const ck = process.env.WOOCOMMERCE_CONSUMER_KEY || "";
+  const cs = process.env.WOOCOMMERCE_CONSUMER_SECRET || "";
   const url = new URL(`${base}/wp-json/wc/v3/${endpoint}`);
 
   Object.entries(params || {}).forEach(([k, v]) => {
@@ -195,7 +185,7 @@ function buildUrl(endpoint: string, params: Record<string, unknown> = {}): strin
   return url.toString();
 }
 
-async function wcFetchRaw<T>(endpoint: string, params: Record<string, unknown> = {}, revalidate = 600): Promise<{ data: T; headers: Headers }> {
+export async function wcFetchRaw<T>(endpoint: string, params: Record<string, unknown> = {}, revalidate = 600): Promise<{ data: T; headers: Headers }> {
   const url = buildUrl(endpoint, params);
 
   const fetchOptions: RequestInit = {};
@@ -207,7 +197,12 @@ async function wcFetchRaw<T>(endpoint: string, params: Record<string, unknown> =
 
   const res = await fetch(url, fetchOptions);
   if (!res.ok) {
-    throw new Error(`WooCommerce fetch failed: ${res.status} ${res.statusText}`);
+    const msg = `WooCommerce fetch failed: ${res.status} ${res.statusText}`;
+    if (res.status === 401 || res.status === 403) {
+      console.warn(`${msg}. Verifica WOOCOMMERCE_API_URL, WOOCOMMERCE_CONSUMER_KEY y WOOCOMMERCE_CONSUMER_SECRET.`);
+      return { data: [] as unknown as T, headers: res.headers };
+    }
+    throw new Error(msg);
   }
   const data = (await res.json()) as T;
   return { data, headers: res.headers };

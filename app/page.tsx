@@ -5,64 +5,33 @@ import ProductShowcase from '@/components/home/ProductShowcase';
 import BrandStory from '@/components/home/BrandStory';
 import StatsSection from '@/components/home/StatsSection';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
-import InstagramFeed from '@/components/home/InstagramFeed';
-import { getAllProductCategories, getWooApi } from '@/lib/woocommerce';
+import InstagramFeed from '@/components/social/InstagramFeed';
+import { getAllProductCategories, wcFetchRaw } from '@/lib/woocommerce';
 
 async function getHeroProducts() {
   try {
-    // Obtener productos destacados para el slider (mínimo 3, máximo 5)
-    const response = await getWooApi().get('products', {
-      per_page: 5,
-      featured: true,
-      status: 'publish',
-    });
-
-    const products = response.data;
-    if (Array.isArray(products) && products.length >= 3) {
-      return products;
-    }
-
-    // Si no hay suficientes productos destacados, obtener los más recientes
-    const fallbackResponse = await getWooApi().get('products', {
-      per_page: 5,
-      orderby: 'date',
-      order: 'desc',
-      status: 'publish',
-    });
-
-    const fallbackProducts = fallbackResponse.data;
-    return Array.isArray(fallbackProducts) ? fallbackProducts : [];
+    const resp = await wcFetchRaw<any[]>("products", { per_page: 5, featured: true, status: "publish" }, 600);
+    const products = Array.isArray(resp.data) ? resp.data : [];
+    if (products.length >= 3) return products;
+    const fallback = await wcFetchRaw<any[]>("products", { per_page: 5, orderby: "date", order: "desc", status: "publish" }, 600);
+    const fallbackProducts = Array.isArray(fallback.data) ? fallback.data : [];
+    return fallbackProducts;
   } catch (error) {
-    console.error('Error fetching hero products:', error);
+    console.error("Error fetching hero products:", error);
     return [];
   }
 }
 
 async function getFeaturedProducts() {
   try {
-    const response = await getWooApi().get('products', {
-      per_page: 6,
-      featured: true,
-      status: 'publish',
-    });
-
-    const products = response.data;
-    if (Array.isArray(products) && products.length > 0) {
-      return products;
-    }
-
-    // Si no hay productos destacados, obtener los más recientes
-    const fallbackResponse = await getWooApi().get('products', {
-      per_page: 6,
-      orderby: 'date',
-      order: 'desc',
-      status: 'publish',
-    });
-
-    const fallbackProducts = fallbackResponse.data;
-    return Array.isArray(fallbackProducts) ? fallbackProducts : [];
+    const resp = await wcFetchRaw<any[]>("products", { per_page: 6, featured: true, status: "publish" }, 600);
+    const products = Array.isArray(resp.data) ? resp.data : [];
+    if (products.length > 0) return products;
+    const fallback = await wcFetchRaw<any[]>("products", { per_page: 6, orderby: "date", order: "desc", status: "publish" }, 600);
+    const fallbackProducts = Array.isArray(fallback.data) ? fallback.data : [];
+    return fallbackProducts;
   } catch (error) {
-    console.error('Error fetching featured products:', error);
+    console.error("Error fetching featured products:", error);
     return [];
   }
 }
@@ -150,8 +119,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Instagram Feed */}
-      <InstagramFeed />
+      <InstagramFeed username="saprixoficial" />
     </main>
   );
 }

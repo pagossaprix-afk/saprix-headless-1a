@@ -75,7 +75,7 @@ export default function StatsSection() {
                             className="absolute -top-24 -right-12 w-48 h-48 md:w-64 md:h-64 pointer-events-none z-20 hidden sm:block"
                         >
                             <img
-                                src="/LONDRES/Zapatillas Londres Saprix Futsal Microfutbol  (1).png"
+                                src="/LONDRES/Zapatillas Londres Negra Saprix Futsal Microfutbol (1).png"
                                 alt=""
                                 aria-hidden="true"
                                 className="w-full h-full object-contain drop-shadow-2xl"
