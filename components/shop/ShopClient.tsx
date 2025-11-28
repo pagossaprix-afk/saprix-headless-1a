@@ -320,7 +320,7 @@ export function ShopClient({ initialProducts, categories }: ShopClientProps) {
                                         imageUrl={product.images[0]?.src || ''}
                                         slug={product.slug}
                                         category={product.categories?.[0]?.slug}
-                                        images={product.images.map(img => img.src)}
+                                        images={product.images?.map(img => img.src) || []}
                                     />
                                 </div>
                             ))}
