@@ -8,13 +8,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Popover } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { IoHeartOutline, IoPersonCircleOutline, IoMenuOutline, IoShirt } from "react-icons/io5";
-import { GiTravelDress, GiRunningShoe, GiSocks } from "react-icons/gi";
+import { IoHeartOutline, IoPersonCircleOutline, IoMenuOutline, IoShirt, IoFootball } from "react-icons/io5";
+import { GiTravelDress, GiRunningShoe, GiSocks, GiBackpack, GiWhistle } from "react-icons/gi";
 import { FaMinusCircle } from "react-icons/fa";
-import { ChevronDown, List, Search, Flame, ShoppingCart, User, UserCircle, Truck, Package, HelpCircle, Trash2, X } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ChevronDown, List, Search, Flame, ShoppingCart, User, UserCircle, Truck, Package, HelpCircle, Trash2, X, Plus, Minus } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "next-themes"; // Importar useTheme
+import { useCart } from "@/context/CartContext";
+
 
 // Paleta Saprix: fondo azul de marca, texto blanco en azules y hover rojo‑naranja
 const brand = {
@@ -25,40 +27,10 @@ const brand = {
   navText: "text-white",
 };
 
-// Categorías Saprix - Marca Colombiana de Zapatillas de Fútbol Sala
-const categories = [
-  { name: "Sala Clásicos", Icon: GiRunningShoe, href: "/productos?category=sala-clasicos", color: "#3B00FF", description: "Diseño tradicional, máxima comodidad" },
-  { name: "Velocidad", Icon: GiRunningShoe, href: "/productos?category=velocidad", color: "#FF9500", description: "Ligereza y rapidez extrema" },
-  { name: "Agarre", Icon: GiRunningShoe, href: "/productos?category=agarre", color: "#00C2FF", description: "Tracción superior en cancha" },
-  { name: "Niños", Icon: IoShirt, href: "/productos?category=ninos", color: "#FF3E7F", description: "Diseñados para jóvenes talentos" },
-  { name: "Medias", Icon: GiSocks, href: "/productos?category=medias", color: "#8A2BE2", description: "Complementa tu equipamiento" },
-];
-
-const navItems = [
-  {
-    name: "Hombre", href: "/productos?hombre", submenu: [
-      { name: "Zapatillas Sala", href: "/productos?hombre&cat=zapatillas" },
-      { name: "Ofertas", href: "/productos?hombre&cat=ofertas" },
-    ]
-  },
-  {
-    name: "Mujer", href: "/productos?mujer", submenu: [
-      { name: "Zapatillas Sala", href: "/productos?mujer&cat=zapatillas" },
-      { name: "Ofertas", href: "/productos?mujer&cat=ofertas" },
-    ]
-  },
-  {
-    name: "Niños", href: "/productos?ninos", submenu: [
-      { name: "Zapatillas Sala", href: "/productos?ninos&cat=zapatillas" },
-      { name: "Ofertas", href: "/productos?ninos&cat=ofertas" },
-    ]
-  },
-  { name: "Ofertas", href: "/ofertas" },
-];
-
 export default function FutsalHeader() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { items, cartTotal, removeItem, updateQuantity, cartCount: contextCartCount } = useCart();
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -66,18 +38,20 @@ export default function FutsalHeader() {
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Debounce search
+  // Live Search Effect
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      if (searchQuery.trim().length >= 2) {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.trim().length > 2) {
         setIsSearching(true);
         try {
           const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&per_page=5`);
-          const data = await res.json();
-          setSearchResults(data.productos || []);
-          setShowResults(true);
+          if (res.ok) {
+            const data = await res.json();
+            setSearchResults(data.productos || []);
+            setShowResults(true);
+          }
         } catch (error) {
-          console.error("Error searching:", error);
+          console.error("Search error:", error);
         } finally {
           setIsSearching(false);
         }
@@ -85,10 +59,65 @@ export default function FutsalHeader() {
         setSearchResults([]);
         setShowResults(false);
       }
-    }, 300);
+    }, 500);
 
-    return () => clearTimeout(timer);
+    return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
+
+  // Dynamic Categories State
+  const [dynamicCategories, setDynamicCategories] = useState<any[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const res = await fetch('/api/categories');
+        if (res.ok) {
+          const data = await res.json();
+          // Filter top level categories (parent === 0)
+          const topLevel = data.filter((c: any) => c.parent === 0 && c.count > 0);
+          setDynamicCategories(topLevel);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    }
+    fetchCategories();
+  }, []);
+  // Map dynamic categories to the format expected by the UI
+  const categories = useMemo(() => {
+    return dynamicCategories.map(cat => {
+      let Icon = GiRunningShoe;
+      let color = "#3B00FF";
+
+      const lowerName = cat.name.toLowerCase();
+
+      if (lowerName.includes('balon')) {
+        Icon = IoFootball;
+        color = "#FF0000";
+      } else if (lowerName.includes('ropa') || lowerName.includes('camisa') || lowerName.includes('pantalon')) {
+        Icon = IoShirt;
+        color = "#00AA00";
+      } else if (lowerName.includes('accesorio')) {
+        Icon = GiWhistle;
+        color = "#FFA500";
+      } else if (lowerName.includes('maleta') || lowerName.includes('guayera')) {
+        Icon = GiBackpack;
+        color = "#800080";
+      }
+
+      return {
+        name: cat.name,
+        Icon: Icon,
+        href: `/tienda?category=${cat.slug}`,
+        color: color,
+        description: cat.description || "Explora nuestra colección",
+        slug: cat.slug
+      };
+    });
+  }, [dynamicCategories]);
 
   // Close search on click outside
   useEffect(() => {
@@ -103,7 +132,6 @@ export default function FutsalHeader() {
   const [showCatMenu, setShowCatMenu] = useState(false);
   const [selectedCat, setSelectedCat] = useState<{ name: string; slug: string } | null>(null);
   const [wishlistCount, setWishlistCount] = useState(0);
-  const [cartCount, setCartCount] = useState(0);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const accountBtnRef = useRef<HTMLButtonElement | null>(null);
   const [hoverNav, setHoverNav] = useState<string | null>(null);
@@ -111,13 +139,10 @@ export default function FutsalHeader() {
   useEffect(() => {
     try {
       const wc = parseInt(localStorage.getItem("wishlistCount") || "0");
-      const cc = parseInt(localStorage.getItem("cartCount") || "0");
       setWishlistCount(isNaN(wc) ? 0 : wc);
-      setCartCount(isNaN(cc) ? 0 : cc);
     } catch { }
     const handler = (e: StorageEvent) => {
       if (e.key === "wishlistCount") setWishlistCount(parseInt(e.newValue || "0") || 0);
-      if (e.key === "cartCount") setCartCount(parseInt(e.newValue || "0") || 0);
     };
     window.addEventListener("storage", handler);
     setMounted(true); // Marcar como montado
@@ -155,9 +180,9 @@ export default function FutsalHeader() {
     const locale = process.env.NEXT_PUBLIC_LOCALE || "es-CO";
     const currency = process.env.NEXT_PUBLIC_CURRENCY || "COP";
     try {
-      return new Intl.NumberFormat(locale, { style: "currency", currency });
+      return new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0 });
     } catch {
-      return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP" });
+      return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
     }
   }, []);
 
@@ -166,12 +191,7 @@ export default function FutsalHeader() {
     <header className="sticky top-0 z-50">
       {/* Topbar Mobile - Marquee */}
       {/* Topbar Mobile - Marquee (Visible en Desktop también por solicitud) */}
-      <motion.div
-        initial={{ x: '100%' }}
-        animate={{ x: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="bg-gray-900 text-white overflow-hidden py-2.5 relative z-50 border-b border-gray-800 shadow-sm"
-      >
+      <div className="bg-gray-900 text-white overflow-hidden py-2.5 relative z-50 border-b border-gray-800 shadow-sm">
         <style jsx>{`
           @keyframes marquee {
             0% { transform: translateX(0); }
@@ -209,7 +229,7 @@ export default function FutsalHeader() {
             </div>
           ))}
         </div>
-      </motion.div>
+      </div>
 
       <div className="hidden lg:block">
         {/* Barra superior: blanca + buscador + soporte (Saprix) */}
@@ -265,7 +285,7 @@ export default function FutsalHeader() {
 
                   {/* Resultados de búsqueda en vivo */}
                   <AnimatePresence>
-                    {showResults && searchResults.length > 0 && (
+                    {showResults && (
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -273,48 +293,56 @@ export default function FutsalHeader() {
                         className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden z-[60]"
                       >
                         <div className="p-2">
-                          <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-3 py-2">Resultados</h3>
-                          {searchResults.map((product) => (
-                            <Link
-                              key={product.id}
-                              href={`/producto/${product.slug}`}
-                              onClick={() => setShowResults(false)}
-                              className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
-                            >
-                              <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-gray-800 overflow-hidden shrink-0 border border-gray-200 dark:border-gray-700">
-                                {product.images?.[0]?.src ? (
-                                  <img src={product.images[0].src} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                    <Package size={20} />
+                          {searchResults.length > 0 ? (
+                            <>
+                              <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-3 py-2">Resultados</h3>
+                              {searchResults.map((product) => (
+                                <Link
+                                  key={product.id}
+                                  href={`/${product.slug}`}
+                                  onClick={() => setShowResults(false)}
+                                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+                                >
+                                  <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-gray-800 overflow-hidden shrink-0 border border-gray-200 dark:border-gray-700">
+                                    <img src={product.imagen || "/placeholder-image.png"} alt={product.nombre} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                   </div>
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-bold text-gray-900 dark:text-white truncate group-hover:text-saprix-electric-blue transition-colors">
-                                  {product.name}
-                                </h4>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-xs font-bold text-gray-900 dark:text-white">
-                                    {moneyFmt.format(Number(product.price || 0))}
-                                  </span>
-                                  {product.regular_price && product.price < product.regular_price && (
-                                    <span className="text-[10px] text-gray-400 line-through">
-                                      {moneyFmt.format(Number(product.regular_price))}
-                                    </span>
-                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="text-sm font-bold text-gray-900 dark:text-white truncate group-hover:text-saprix-electric-blue transition-colors">
+                                      {product.nombre}
+                                    </h4>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                      <span className="text-xs font-bold text-gray-900 dark:text-white">
+                                        {moneyFmt.format(Number(product.precio || 0))}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <ChevronDown className="w-4 h-4 text-gray-300 -rotate-90 opacity-0 group-hover:opacity-100 transition-all" />
+                                </Link>
+                              ))}
+                              <Link
+                                href={`/productos?q=${encodeURIComponent(searchQuery)}`}
+                                onClick={() => setShowResults(false)}
+                                className="block mt-2 text-center text-xs font-bold text-saprix-electric-blue hover:underline py-2 border-t border-gray-100 dark:border-gray-800"
+                              >
+                                Ver todos los resultados ({searchResults.length}+)
+                              </Link>
+                            </>
+                          ) : (
+                            !isSearching && (
+                              <div className="p-6 text-center">
+                                <div className="text-gray-400 dark:text-gray-500 mb-2">
+                                  <Search size={32} className="mx-auto opacity-50" />
                                 </div>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  No se encontraron productos para{' '}
+                                  <span className="font-bold text-gray-900 dark:text-white">"{searchQuery}"</span>
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                  Intenta con otros términos de búsqueda
+                                </p>
                               </div>
-                              <ChevronDown className="w-4 h-4 text-gray-300 -rotate-90 opacity-0 group-hover:opacity-100 transition-all" />
-                            </Link>
-                          ))}
-                          <Link
-                            href={`/productos?q=${encodeURIComponent(searchQuery)}`}
-                            onClick={() => setShowResults(false)}
-                            className="block mt-2 text-center text-xs font-bold text-saprix-electric-blue hover:underline py-2 border-t border-gray-100 dark:border-gray-800"
-                          >
-                            Ver todos los resultados ({searchResults.length}+)
-                          </Link>
+                            )
+                          )}
                         </div>
                       </motion.div>
                     )}
@@ -384,21 +412,21 @@ export default function FutsalHeader() {
                               >
                                 <div className="p-3 border-b border-gray-100 dark:border-gray-800 mb-1">
                                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Bienvenido</p>
-                                  <button className="w-full rounded-lg bg-saprix-electric-blue text-white px-4 py-2 text-xs font-bold uppercase tracking-wider shadow-md hover:bg-blue-700 transition-colors">
+                                  <a href="https://pagos.saprix.com.co/wp-admin" target="_blank" rel="noopener noreferrer" className="block w-full text-center rounded-lg bg-saprix-electric-blue text-white px-4 py-2 text-xs font-bold uppercase tracking-wider shadow-md hover:bg-blue-700 transition-colors">
                                     Iniciar Sesión
-                                  </button>
+                                  </a>
                                 </div>
                                 <div className="p-1">
-                                  <Link href="/cuenta/seguimiento" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
-                                    <div className="w-8 h-8 rounded-md bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
+                                  <div className="flex items-center gap-3 px-3 py-2 rounded-lg opacity-50 cursor-not-allowed group">
+                                    <div className="w-8 h-8 rounded-md bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 transition-colors">
                                       <Truck size={16} />
                                     </div>
                                     <div>
                                       <span className="block text-sm font-bold text-gray-900 dark:text-white">Rastrear</span>
                                       <span className="block text-[10px] text-gray-500">Tu pedido en tiempo real</span>
                                     </div>
-                                  </Link>
-                                  <Link href="/cuenta/pedidos" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+                                  </div>
+                                  <a href="https://pagos.saprix.com.co/mi-cuenta/pedidos/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
                                     <div className="w-8 h-8 rounded-md bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 transition-colors">
                                       <Package size={16} />
                                     </div>
@@ -406,8 +434,8 @@ export default function FutsalHeader() {
                                       <span className="block text-sm font-bold text-gray-900 dark:text-white">Mis Pedidos</span>
                                       <span className="block text-[10px] text-gray-500">Historial de compras</span>
                                     </div>
-                                  </Link>
-                                  <Link href="/ayuda" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+                                  </a>
+                                  <Link href="/preguntas-frecuentes" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
                                     <div className="w-8 h-8 rounded-md bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400 group-hover:bg-green-100 dark:group-hover:bg-green-900/30 transition-colors">
                                       <HelpCircle size={16} />
                                     </div>
@@ -446,7 +474,7 @@ export default function FutsalHeader() {
             {/* Botón Products Category - Desktop Only */}
             <div className="hidden lg:block">
               <Popover className="relative">
-                {({ open }) => (
+                {({ open, close }) => (
                   <>
                     <Popover.Button as={motion.button}
                       whileHover={{ scale: 1.05 }}
@@ -502,7 +530,7 @@ export default function FutsalHeader() {
                                 </h4>
                                 <div className="grid grid-cols-1 gap-2">
                                   {categories.map(({ name, Icon, href, color, description }, idx) => (
-                                    <Link key={name} href={href}>
+                                    <Link key={name} href={href} onClick={() => close()}>
                                       <div className="group flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-transparent hover:border-gray-100 dark:hover:border-gray-700">
                                         {/* Icono con fondo de color suave */}
                                         <div
@@ -541,7 +569,7 @@ export default function FutsalHeader() {
                                 </h4>
 
                                 {/* Banner principal - Gradiente Saprix */}
-                                <Link href="/productos?featured=true" className="group block mb-3">
+                                <Link href="/tienda?featured=true" className="group block mb-3" onClick={() => close()}>
                                   <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-saprix-electric-blue to-blue-700 p-5 text-white shadow-lg shadow-saprix-electric-blue/20 group-hover:shadow-saprix-electric-blue/30 transition-all">
                                     <div className="relative z-10">
                                       <div className="flex items-center gap-2 mb-2">
@@ -566,7 +594,7 @@ export default function FutsalHeader() {
 
                                 {/* Mini links - Cards con borde sutil */}
                                 <div className="grid grid-cols-2 gap-3">
-                                  <Link href="/productos?sale=true" className="group">
+                                  <Link href="/tienda?sale=true" className="group" onClick={() => close()}>
                                     <div className="p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50/50 dark:hover:bg-red-900/10 transition-all">
                                       <div className="flex items-center gap-2 mb-1">
                                         <Flame className="w-4 h-4 text-red-500" />
@@ -575,7 +603,7 @@ export default function FutsalHeader() {
                                       <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Hasta 40% off</p>
                                     </div>
                                   </Link>
-                                  <Link href="/productos?new=true" className="group">
+                                  <Link href="/tienda?new=true" className="group" onClick={() => close()}>
                                     <div className="p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-saprix-lime/50 hover:bg-saprix-lime/5 transition-all">
                                       <div className="flex items-center gap-2 mb-1">
                                         <Package className="w-4 h-4 text-saprix-electric-blue dark:text-saprix-lime" />
@@ -593,19 +621,19 @@ export default function FutsalHeader() {
                                   Ayuda
                                 </h4>
                                 <div className="space-y-1">
-                                  <Link href="/guia-tallas" className="group flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+                                  <Link href="/guia-tallas" className="group flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all" onClick={() => close()}>
                                     <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-gray-700 shadow-sm transition-colors">
                                       <span className="text-sm">📏</span>
                                     </div>
                                     <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white font-medium">Guía de tallas</span>
                                   </Link>
-                                  <Link href="/cuidado" className="group flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+                                  <Link href="/cuidado" className="group flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all" onClick={() => close()}>
                                     <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-white dark:group-hover:bg-gray-700 shadow-sm transition-colors">
                                       <HelpCircle className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                                     </div>
                                     <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white font-medium">Cuidado del producto</span>
                                   </Link>
-                                  <a href="https://wa.me/573043136608" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-3 p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-all">
+                                  <a href="https://wa.me/573043136608" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-3 p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-all" onClick={() => close()}>
                                     <div className="w-8 h-8 rounded-md bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-900/50 shadow-sm transition-colors">
                                       <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
@@ -643,8 +671,9 @@ export default function FutsalHeader() {
                                 </span>
                               </div>
                               <Link
-                                href="/productos"
+                                href="/tienda"
                                 className="group inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold rounded-full hover:bg-saprix-electric-blue dark:hover:bg-saprix-lime hover:text-white dark:hover:text-black transition-all duration-300 shadow-md hover:shadow-lg"
+                                onClick={() => close()}
                               >
                                 Ver catálogo completo
                                 <svg className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -668,7 +697,7 @@ export default function FutsalHeader() {
             <nav className="hidden items-center gap-4 font-semibold lg:flex">
               {[
                 { name: "Inicio", href: "/" },
-                { name: "Tienda", href: "/productos" },
+                { name: "Productos", href: "/tienda" },
                 { name: "Blog", href: "/blog" },
                 { name: "Contacto", href: "/contacto" },
               ].map((item, idx, arr) => (
@@ -684,7 +713,7 @@ export default function FutsalHeader() {
             {/* Iconos derecha: ofertas, favoritos y carrito sobre fondo azul + Hamburger mobile */}
             <div className="flex items-center gap-6">
               <motion.div whileHover={{ scale: 1.05 }}>
-                <Link href="/deals" className="flex items-center gap-2 font-bold text-white hover:text-saprix-red-orange active:text-saprix-red-orange">
+                <Link href="/productos?sale=true" className="flex items-center gap-2 font-bold text-white hover:text-saprix-red-orange active:text-saprix-red-orange">
                   <Flame size={18} className="text-saprix-red-orange" />
                   <span>Ofertas</span>
                 </Link>
@@ -701,48 +730,87 @@ export default function FutsalHeader() {
                 <SheetTrigger asChild>
                   <motion.button className="relative text-white hover:text-saprix-red-orange" aria-label="Carrito" whileHover={{ scale: 1.05 }}>
                     <ShoppingCart size={18} />
-                    <span className="absolute -top-2 -right-4 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#f42121] text-xs text-white">{String(cartCount).padStart(2, "0")}</span>
+                    <span className="absolute -top-2 -right-4 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#f42121] text-xs text-white">{String(contextCartCount).padStart(2, "0")}</span>
                   </motion.button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-80 sm:w-96 p-0">
-                  <div className="flex items-center justify-between border-b px-4 py-3">
-                    <h3 className="text-base font-semibold">Mi carrito</h3>
-                    <button className="rounded-md p-1 hover:bg-neutral-100" aria-label="Cerrar">
-                      <X size={18} />
-                    </button>
-                  </div>
-                  <div className="max-h-[60vh] overflow-y-auto px-4 py-3 space-y-3">
-                    {(() => {
-                      let items: Array<{ slug: string; nombre: string; imagen: string; precio: number }> = [];
-                      try {
-                        const raw = localStorage.getItem("cartItems") || "[]";
-                        items = JSON.parse(raw);
-                      } catch { }
-                      if (!items || items.length === 0) {
-                        items = [
-                          { slug: "ejemplo-1", nombre: "Producto de ejemplo", imagen: "/placeholder-image.png", precio: 94000 },
-                        ];
-                      }
-                      return items.map((it) => (
-                        <div key={`c-${it.slug}`} className="flex items-center gap-3">
-                          <img src={it.imagen} alt={it.nombre} className="h-12 w-12 rounded object-cover" />
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-gray-900">{it.nombre}</p>
-                            <p className="text-xs text-gray-500">{moneyFmt.format(Number(it.precio))}</p>
-                          </div>
-                          <button className="rounded-md p-1 text-gray-600 hover:bg-neutral-100" aria-label="Eliminar">
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      ));
-                    })()}
-                  </div>
-                  <div className="sticky bottom-0 border-t bg-white p-4">
-                    <div className="mb-3 flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Total</span>
-                      <span className="font-semibold">{moneyFmt.format(94000)}</span>
+                <SheetContent side="right" hideClose className="w-full sm:w-[480px] p-0 flex flex-col">
+                  <SheetHeader className="flex flex-row items-center justify-between border-b border-gray-200 dark:border-gray-800 px-6 py-4 bg-white dark:bg-gray-900 space-y-0">
+                    <div className="flex items-center gap-2">
+                      <ShoppingCart size={20} className="text-saprix-electric-blue" />
+                      <SheetTitle className="text-lg font-bold text-gray-900 dark:text-white">Carrito de Compras</SheetTitle>
                     </div>
-                    <Link href="/carrito" className="w-full rounded-md border border-saprix-electric-blue px-3 py-2 text-center text-sm font-semibold text-saprix-electric-blue hover:bg-saprix-electric-blue/10">Ver carrito</Link>
+                    <SheetClose className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                      <X size={20} className="text-gray-500" />
+                      <span className="sr-only">Cerrar</span>
+                    </SheetClose>
+                  </SheetHeader>
+
+                  <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50 dark:bg-gray-900">
+                    {items.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                        <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                          <ShoppingCart size={40} className="text-gray-400" />
+                        </div>
+                        <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Tu carrito está vacío</h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Agrega productos para comenzar tu compra</p>
+                        <SheetClose asChild>
+                          <Link href="/tienda" className="px-6 py-3 bg-saprix-electric-blue text-white font-bold hover:bg-blue-700 transition-colors">
+                            Ver Productos
+                          </Link>
+                        </SheetClose>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {items.map((item) => (
+                          <div key={`cart-${item.id}-${item.variationId || 'base'}`} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 hover:shadow-md transition-shadow">
+                            <div className="flex gap-3">
+                              <div className="flex-shrink-0">
+                                <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 overflow-hidden border border-gray-200 dark:border-gray-600">
+                                  <img src={item.image || "/placeholder-image.png"} alt={item.name} className="w-full h-full object-cover" />
+                                </div>
+                              </div>
+                              <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                <div>
+                                  <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1 line-clamp-2 leading-tight">{item.name}</h4>
+                                  {item.attributes && Object.keys(item.attributes).length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mb-2">
+                                      {Object.entries(item.attributes).map(([key, value]) => (
+                                        <span key={key} className="text-[10px] text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 border border-gray-200 dark:border-gray-700">{key}: <span className="font-semibold">{value}</span></span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex items-end justify-between gap-2">
+                                  <span className="text-base font-bold text-saprix-electric-blue">{moneyFmt.format(Number(item.price))}</span>
+
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex items-center border border-gray-300 dark:border-gray-600 overflow-hidden h-7">
+                                      <button onClick={() => item.quantity > 1 && updateQuantity(item.id, item.quantity - 1, item.variationId)} disabled={item.quantity <= 1} className="px-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300 disabled:opacity-50 h-full flex items-center justify-center"><Minus size={12} /></button>
+                                      <span className="px-1.5 text-xs font-bold text-gray-900 dark:text-white border-x border-gray-300 dark:border-gray-600 min-w-[1.5rem] text-center flex items-center justify-center h-full">{item.quantity}</span>
+                                      <button onClick={() => updateQuantity(item.id, item.quantity + 1, item.variationId)} className="px-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300 h-full flex items-center justify-center"><Plus size={12} /></button>
+                                    </div>
+                                    <button onClick={() => removeItem(item.id, item.variationId)} className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" aria-label="Eliminar"><Trash2 size={16} /></button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 space-y-4">
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+                      <span className="text-lg font-bold text-gray-900 dark:text-white">Total</span>
+                      <span className="text-2xl font-bold text-saprix-electric-blue">{moneyFmt.format(cartTotal)}</span>
+                    </div>
+                    <SheetClose asChild>
+                      <Link href="/checkout" className="block w-full py-4 bg-saprix-electric-blue hover:bg-blue-700 text-white text-center font-bold transition-colors shadow-lg hover:shadow-xl">Continuar al Pago</Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <button className="w-full py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Seguir Comprando</button>
+                    </SheetClose>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -800,7 +868,7 @@ export default function FutsalHeader() {
                         </Link>
                         <Link href="/carrito" className="relative" aria-label="Carrito">
                           <ShoppingCart size={18} />
-                          <span className="absolute -top-2 -right-4 inline-flex h-5 w-5 items-center justify-center rounded-full bg-saprix-red-orange text-xs text-white">{String(cartCount).padStart(2, "0")}</span>
+                          <span className="absolute -top-2 -right-4 inline-flex h-5 w-5 items-center justify-center rounded-full bg-saprix-red-orange text-xs text-white">{String(contextCartCount).padStart(2, "0")}</span>
                         </Link>
                       </div>
                     </div>
