@@ -4,30 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/product/ProductCard';
 import { SlidersHorizontal, X, ChevronDown, ChevronUp, ArrowRight, Check } from 'lucide-react';
-
-interface Product {
-    id: number;
-    name: string;
-    slug: string;
-    price: string;
-    regular_price?: string;
-    sale_price?: string;
-    images: Array<{ src: string; alt?: string }>;
-    categories: Array<{ id: number; name: string; slug: string }>;
-    attributes?: Array<{
-        id: number;
-        name: string;
-        options: string[];
-    }>;
-}
-
-interface Category {
-    id: number;
-    name: string;
-    slug: string;
-    parent: number;
-    count: number;
-}
+import { Category, Product } from '@/types/woocommerce';
 
 interface ShopClientProps {
     initialProducts: Product[];
@@ -135,7 +112,7 @@ export function ShopClient({ initialProducts, categories }: ShopClientProps) {
         let result = initialProducts.filter(product => {
             // Category filter
             if (selectedCategory) {
-                const hasCategory = product.categories.some(c => c.slug === selectedCategory);
+                const hasCategory = product.categories?.some(c => c.slug === selectedCategory);
                 if (!hasCategory) return false;
             }
 
@@ -200,22 +177,8 @@ export function ShopClient({ initialProducts, categories }: ShopClientProps) {
             }
 
             // Featured filter
-            // Note: Assuming 'featured' is an attribute or we check if it's in a specific category or tag. 
-            // Since we don't have a direct 'featured' property on the Product interface shown, 
-            // we might need to rely on a tag or attribute. 
-            // For now, let's assume if it's passed via URL, we might filter by a 'featured' tag if available, 
-            // or if the backend handles it. But since this is client-side filtering:
-            // Let's check if 'featured' is in attributes or categories for now as a fallback.
             if (isFeatured) {
-                // Placeholder: If you have a featured flag, use it. 
-                // Otherwise, maybe check if it has a 'Destacado' tag?
-                // For this specific codebase, I'll check if it has a category named 'Destacados' or similar if applicable,
-                // or just pass it through if we can't determine it client-side without more data.
-                // BETTER APPROACH: Check if it's a "best seller" or similar if we have that data.
-                // If no data, we might skip this or implement it later. 
-                // However, the user asked for links to work.
-                // Let's assume for now we don't filter client side for featured unless we have the data.
-                // But wait, 'sale' we can check.
+                // Placeholder logic
             }
 
             // Sale filter (URL param)
@@ -227,16 +190,10 @@ export function ShopClient({ initialProducts, categories }: ShopClientProps) {
 
             // New filter (URL param)
             if (isNew) {
-                // Logic for "new" products. 
-                // Maybe check date_created if available? 
-                // Or check if it has a 'Nuevo' tag/category?
-                // For now, let's check if it has a 'Nuevo' category or attribute.
-                const isNewProduct = product.categories.some(c => c.slug === 'nuevo' || c.name.toLowerCase() === 'nuevo') ||
+                const isNewProduct = product.categories?.some(c => c.slug === 'nuevo' || c.name.toLowerCase() === 'nuevo') ||
                     product.attributes?.some(a => a.name.toLowerCase() === 'estado' && a.options.includes('Nuevo'));
 
-                // If we can't determine, we might just show all or rely on sort.
-                // But let's try to be strict if possible.
-                // If no specific logic, we might just rely on the sortOption='newest' which is default.
+                if (!isNewProduct) return false;
             }
 
             return true;
@@ -244,9 +201,9 @@ export function ShopClient({ initialProducts, categories }: ShopClientProps) {
 
         // Sorting
         if (sortOption === 'price_asc') {
-            result.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+            result.sort((a, b) => parseFloat(a.price || '0') - parseFloat(b.price || '0'));
         } else if (sortOption === 'price_desc') {
-            result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+            result.sort((a, b) => parseFloat(b.price || '0') - parseFloat(a.price || '0'));
         }
 
         return result;
@@ -255,8 +212,10 @@ export function ShopClient({ initialProducts, categories }: ShopClientProps) {
     const handleCategoryClick = (slug: string | null) => {
         if (slug === null) {
             setSelectedCategory(null);
+            router.push('/tienda');
         } else {
-            setSelectedCategory(selectedCategory === slug ? null : slug);
+            setSelectedCategory(slug);
+            router.push(`/tienda?category=${slug}`);
         }
     };
 
@@ -267,6 +226,9 @@ export function ShopClient({ initialProducts, categories }: ShopClientProps) {
         setSelectedGender(null);
         setSelectedColor(null);
         setSelectedDiscount(null);
+        setIsFeatured(false);
+        setIsOnSale(false);
+        setIsNew(false);
         router.push('/tienda');
     };
 
@@ -294,7 +256,7 @@ export function ShopClient({ initialProducts, categories }: ShopClientProps) {
                         <SlidersHorizontal className="w-4 h-4" />
                     </button>
                 </div>
-                {(selectedCategory || selectedGender || selectedColor || selectedDiscount || priceRange[0] || priceRange[1]) && (
+                {(selectedCategory || selectedGender || selectedColor || selectedDiscount || priceRange[0] || priceRange[1] || isFeatured || isOnSale || isNew) && (
                     <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap gap-2 items-center border-t border-gray-100">
                         {selectedCategory && (
                             <button onClick={() => setSelectedCategory(null)} className="flex items-center gap-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-xs font-bold uppercase transition-colors">
@@ -314,6 +276,21 @@ export function ShopClient({ initialProducts, categories }: ShopClientProps) {
                         {selectedDiscount && (
                             <button onClick={() => setSelectedDiscount(null)} className="flex items-center gap-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-xs font-bold uppercase transition-colors">
                                 {selectedDiscount}% descuento <X className="w-3 h-3" />
+                            </button>
+                        )}
+                        {isFeatured && (
+                            <button onClick={() => setIsFeatured(false)} className="flex items-center gap-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-xs font-bold uppercase transition-colors">
+                                Destacados <X className="w-3 h-3" />
+                            </button>
+                        )}
+                        {isOnSale && (
+                            <button onClick={() => setIsOnSale(false)} className="flex items-center gap-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-xs font-bold uppercase transition-colors">
+                                Ofertas <X className="w-3 h-3" />
+                            </button>
+                        )}
+                        {isNew && (
+                            <button onClick={() => setIsNew(false)} className="flex items-center gap-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-xs font-bold uppercase transition-colors">
+                                Nuevos <X className="w-3 h-3" />
                             </button>
                         )}
                         <button onClick={clearAllFilters} className="text-xs underline font-medium text-gray-500 hover:text-black ml-auto">
@@ -339,10 +316,10 @@ export function ShopClient({ initialProducts, categories }: ShopClientProps) {
                                     <ProductCard
                                         id={product.id}
                                         name={product.name}
-                                        price={product.price}
+                                        price={product.price || '0'}
                                         imageUrl={product.images[0]?.src || ''}
                                         slug={product.slug}
-                                        category={product.categories[0]?.slug}
+                                        category={product.categories?.[0]?.slug}
                                         images={product.images.map(img => img.src)}
                                     />
                                 </div>
@@ -446,7 +423,7 @@ export function ShopClient({ initialProducts, categories }: ShopClientProps) {
                                                 <span className={`text-base group-hover:underline ${selectedCategory === parent.slug ? 'font-bold text-black' : 'text-gray-700'}`}>{parent.name}</span>
                                             </div>
                                         </button>
-                                        {parent.children.length > 0 && (
+                                        {parent.children && parent.children.length > 0 && (
                                             <div className="pl-10 space-y-3">
                                                 {parent.children.map((child: any) => (
                                                     <button key={child.id} onClick={() => handleCategoryClick(child.slug)} className="flex items-center justify-between w-full group text-left">
