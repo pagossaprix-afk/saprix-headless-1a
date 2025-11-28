@@ -38,9 +38,10 @@ export default async function ProductPage(props: ProductPageProps) {
         notFound();
     }
 
-    const [colorOptions, sizeOptions] = await Promise.all([
+    const [colorOptions, sizeOptions, variations] = await Promise.all([
         getColorOptionsFromVariations(product.id),
         getSizeOptionsFromVariations(product.id),
+        getProductVariations(product.id),
     ]);
 
     const mappedProduct = applyMapping(product, [
@@ -56,7 +57,7 @@ export default async function ProductPage(props: ProductPageProps) {
         { id: "categories", label: "categories", source: "categories", type: "any" },
         { id: "tags", label: "tags", source: "tags", type: "any" },
         { id: "attributes", label: "attributes", source: "attributes", type: "any" },
-        { id: "variations", label: "variations", source: "variations", type: "any" },
+        // variations ya no se mapea desde el producto padre porque son solo IDs
         { id: "stock_status", label: "stock_status", source: "stock_status", type: "any" },
         { id: "stock_quantity", label: "stock_quantity", source: "stock_quantity", type: "any" },
         { id: "type", label: "type", source: "type", type: "any" },
@@ -68,7 +69,7 @@ export default async function ProductPage(props: ProductPageProps) {
             images={mappedProduct.images || []}
             colorOptions={colorOptions}
             sizeOptions={sizeOptions}
-            variations={mappedProduct.variations || []}
+            variations={variations}
             slug={mappedProduct.slug}
         />
     );

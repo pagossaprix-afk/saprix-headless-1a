@@ -47,7 +47,7 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
 
   // Selected variation and stock information
   const selectedVariation = useMemo(
-    () => variations.find((v) => v.id === selectedVariantId),
+    () => variations?.find((v) => v.id === selectedVariantId),
     [selectedVariantId, variations]
   );
 
@@ -58,9 +58,24 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
   const isOutOfStock =
     variationStock === 0 || selectedVariation?.stock_status === "outofstock";
 
-  const mainImages: Media[] = images && images.length > 0
-    ? images.map(img => ({ ...img, src: ensureHttps(img.src) }))
-    : [{ src: ensureHttps(mapped?.image) ?? "/placeholder-image.png" }];
+  const mainImages: Media[] = useMemo(() => {
+    const baseImages = images && images.length > 0
+      ? images.map(img => ({ ...img, src: ensureHttps(img.src) }))
+      : [{ src: ensureHttps(mapped?.image) ?? "/placeholder-image.png" }];
+
+    // Add variation images if they are not already in baseImages
+    if (variations) {
+      variations.forEach(v => {
+        if (v.image && v.image.src) {
+          const src = ensureHttps(v.image.src);
+          if (!baseImages.some(img => img.src === src)) {
+            baseImages.push({ src, alt: v.image.alt || v.name });
+          }
+        }
+      });
+    }
+    return baseImages;
+  }, [images, mapped, variations]);
 
   const priceFmt = useMemo(() => {
     const locale = "es-CO";
@@ -80,17 +95,38 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
     }
   }, []);
 
+  const currentPrice = useMemo(() => {
+    if (selectedVariation) {
+      // Prefer variation price if available
+      return Number(selectedVariation.price || selectedVariation.sale_price || selectedVariation.regular_price || 0);
+    }
+    return Number(mapped?.final_price || mapped?.price || 0);
+  }, [selectedVariation, mapped]);
+
+  const currentRegularPrice = useMemo(() => {
+    if (selectedVariation) {
+      return Number(selectedVariation.regular_price || 0);
+    }
+    return Number(mapped?.regular_price || 0);
+  }, [selectedVariation, mapped]);
+
+  const isSale = useMemo(() => {
+    if (selectedVariation) {
+      return selectedVariation.on_sale;
+    }
+    return mapped?.on_sale || (mapped?.sale_price && mapped?.sale_price < mapped?.regular_price);
+  }, [selectedVariation, mapped]);
+
   const { addItem } = useCart();
 
   function addToCart() {
-    const imagen = ensureHttps(mainImages?.[0]?.src) || "/placeholder-image.png";
+    const imagen = ensureHttps(mainImages?.[selectedImage]?.src) || "/placeholder-image.png";
     const nombre = mapped?.name || slug;
-    const precio = Number(mapped?.final_price || mapped?.price || 0);
 
     addItem({
-      id: mapped?.id || 0, // Ensure we have an ID. If mapped doesn't have it, we might have an issue.
+      id: mapped?.id || 0,
       name: nombre,
-      price: precio,
+      price: currentPrice,
       quantity: quantity,
       image: imagen,
       slug: slug,
@@ -116,9 +152,6 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
 
   const [activeTab, setActiveTab] = useState<'description' | 'features' | 'reviews'>('description');
 
-  // Mock data for reviews
-  // Mock data for reviews removed in favor of GoogleReviews component
-
   // Mock data for features if not present in mapped
   const features = mapped?.attributes || [
     { name: "Material Exterior", options: ["Sintético de alta resistencia"] },
@@ -131,12 +164,18 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
   return (
     <div className="min-h-screen bg-saprix-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center space-x-2 text-sm text-saprix-gray-600 mb-8 font-inter">
-          <span>Inicio</span>
+        <nav className="flex items-center space-x-2 text-sm text-saprix-gray-600 mb-8 font-inter overflow-x-auto whitespace-nowrap">
+          <a href="/" className="hover:text-saprix-electric-blue transition-colors">Inicio</a>
           <span>/</span>
-          <span>{mapped?.type === "variable" ? "Variaciones" : "Producto"}</span>
+          <a href="/productos" className="hover:text-saprix-electric-blue transition-colors">Productos</a>
+          {mapped?.categories && mapped.categories.length > 0 && (
+            <>
+              <span>/</span>
+              <span className="capitalize">{mapped.categories[0].name}</span>
+            </>
+          )}
           <span>/</span>
-          <span className="text-saprix-electric-blue font-medium">{mapped?.name ?? slug}</span>
+          <span className="text-saprix-electric-blue font-medium truncate max-w-[200px]">{mapped?.name ?? slug}</span>
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -162,7 +201,7 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
               <div className="lg:col-span-9 order-1 lg:order-2">
                 <div className="relative w-full aspect-square bg-white border-2 border-saprix-gray-200 overflow-hidden group cursor-zoom-in z-10">
                   <Image
-                    src={mainImages[selectedImage].src}
+                    src={mainImages[selectedImage] ? mainImages[selectedImage].src : "/placeholder-image.png"}
                     alt={mapped?.name || "Producto Saprix"}
                     fill
                     className="object-contain transition-transform duration-500 group-hover:scale-[1.75]"
@@ -253,11 +292,11 @@ export default function ProductPageFigma({ mapped, images, colorOptions, sizeOpt
             </div>
 
             <div className="flex items-center space-x-4">
-              <span className="text-4xl font-inter font-bold text-saprix-gray-900">{priceFmt.format(Number(mapped?.final_price || mapped?.price || 0))}</span>
-              {mapped?.regular_price && mapped?.sale_price && (
-                <span className="text-2xl font-inter text-saprix-gray-500 line-through">{priceFmt.format(Number(mapped?.regular_price || 0))}</span>
+              <span className="text-4xl font-inter font-bold text-saprix-gray-900">{priceFmt.format(currentPrice)}</span>
+              {currentRegularPrice > currentPrice && (
+                <span className="text-2xl font-inter text-saprix-gray-500 line-through">{priceFmt.format(currentRegularPrice)}</span>
               )}
-              {mapped?.sale_price && (
+              {isSale && (
                 <span className="px-3 py-1 bg-saprix-red-orange text-white text-sm font-inter font-bold -skew-x-6">OFERTA</span>
               )}
             </div>

@@ -13,9 +13,11 @@ interface ProductCardProps {
   price: string;
   imageUrl: string;
   slug: string;
+  category?: string;
+  subcategory?: string;
 }
 
-export default function ProductCard({ id, name, price, imageUrl, slug }: ProductCardProps) {
+export default function ProductCard({ id, name, price, imageUrl, slug, category, subcategory }: ProductCardProps) {
   const { addItem } = useCart();
   // Imagen 'placeholder' por si un guayo no tiene foto
   const finalImageUrl = ensureHttps(imageUrl) || '/placeholder-image.png';
@@ -37,8 +39,13 @@ export default function ProductCard({ id, name, price, imageUrl, slug }: Product
     });
   };
 
+  // Construct hierarchical URL if categories are provided, otherwise fallback to simple slug
+  const productUrl = category && subcategory
+    ? `/productos/${category}/${subcategory}/${slug}`
+    : `/producto/${slug}`;
+
   return (
-    <Link href={`/producto/${slug}`} className="group block relative">
+    <Link href={productUrl} className="group block relative">
       <div className="overflow-hidden bg-white border-2 border-saprix-gray-200 transition-all duration-300 hover:border-saprix-electric-blue -skew-x-6">
         {/* Contenedor de la Imagen */}
         <div className="relative w-full aspect-square skew-x-6 scale-105">
@@ -54,7 +61,7 @@ export default function ProductCard({ id, name, price, imageUrl, slug }: Product
         {/* Contenido de la Tarjeta */}
         <div className="p-4 bg-white skew-x-6">
           <h3 className="text-lg font-inter font-bold text-saprix-gray-900 mb-1 truncate not-italic">{name}</h3>
-          <p className="text-saprix-gray-500 text-sm mb-3 font-inter">Fútbol Sala</p>
+          <p className="text-saprix-gray-500 text-sm mb-3 font-inter capitalize">{subcategory || category || 'Fútbol Sala'}</p>
           <div className="flex items-center justify-between">
             <span className="text-xl font-inter font-bold text-saprix-electric-blue">
               {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP" }).format(numericPrice)}

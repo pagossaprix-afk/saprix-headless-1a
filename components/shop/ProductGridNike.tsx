@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { getProducts } from '@/lib/woocommerce';
 import { getCategoryBySlug } from '@/lib/category-utils';
 import { AddToCartButton } from '@/components/shop/AddToCartButton';
+import ProductCard from '@/components/product/ProductCard';
 import { ensureHttps } from '@/lib/utils';
 
 export type SortValue = 'newest' | 'price-asc' | 'price-desc' | 'popular';
@@ -111,64 +112,32 @@ export async function ProductGridNike({ searchParams }: ProductGridNikeProps) {
                     const salePrice = product.sale_price ? parseFloat(product.sale_price) : null;
                     const regularPrice = product.regular_price ? parseFloat(product.regular_price) : price;
 
-                    // Build hierarchical URL: /productos/:categoria/:subcategoria/:slug
-                    let productUrl = `/productos/${product.slug}`;
+                    // Build hierarchical URL logic is now handled inside ProductCard, but we pass the data
+                    let categorySlug = undefined;
+                    let subcategorySlug = undefined;
+
                     if (product.categories && product.categories.length > 0) {
                         const subCat = product.categories[0];
-                        const topCat = searchParams.categoria || subCat.slug; // fallback to first category if top not provided
-                        productUrl = `/productos/${topCat}/${subCat.slug}/${product.slug}`;
+                        // If we are in a specific category page (searchParams.categoria), use that as top level
+                        // Otherwise try to guess or just use the subcategory as is (ProductCard handles fallback)
+                        categorySlug = searchParams.categoria || 'productos';
+                        subcategorySlug = subCat.slug;
+
+                        // Refinement: If the product has multiple categories, we might want to find the parent.
+                        // But for now, using the first one as subcategory and the current page param as category is a safe bet for navigation continuity.
                     }
 
                     return (
                         <div key={product.id} className="group">
-                            <Link href={productUrl} className="block">
-                                <div className="relative aspect-square mb-4 bg-gray-100 dark:bg-gray-800 overflow-hidden">
-                                    {product.images?.[0] ? (
-                                        <Image
-                                            src={ensureHttps(product.images[0].src)}
-                                            alt={product.name}
-                                            fill
-                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center">
-                                            <span className="text-gray-400">Sin imagen</span>
-                                        </div>
-                                    )}
-                                    <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <AddToCartButton product={product} />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <h3 className="text-base font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-saprix-electric-blue transition-colors">
-                                            {product.name}
-                                        </h3>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        {salePrice ? (
-                                            <>
-                                                <span className="text-lg font-bold text-saprix-electric-blue">
-                                                    ${salePrice.toLocaleString('es-CO')}
-                                                </span>
-                                                <span className="text-sm text-gray-500 line-through">
-                                                    ${regularPrice.toLocaleString('es-CO')}
-                                                </span>
-                                            </>
-                                        ) : (
-                                            <span className="text-lg font-bold text-gray-900 dark:text-white">
-                                                ${price.toLocaleString('es-CO')}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {product.categories && product.categories.length > 0 && (
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            {product.categories[0].name}
-                                        </p>
-                                    )}
-                                </div>
-                            </Link>
+                            <ProductCard
+                                id={product.id}
+                                name={product.name}
+                                price={product.price || '0'}
+                                imageUrl={product.images?.[0]?.src || ''}
+                                slug={product.slug}
+                                category={categorySlug}
+                                subcategory={subcategorySlug}
+                            />
                         </div>
                     );
                 })}
