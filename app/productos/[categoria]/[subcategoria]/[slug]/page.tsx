@@ -38,10 +38,9 @@ export default async function ProductPage(props: ProductPageProps) {
         notFound();
     }
 
-    const [colorOptions, sizeOptions, variations] = await Promise.all([
+    const [colorOptions, sizeOptions] = await Promise.all([
         getColorOptionsFromVariations(product.id),
         getSizeOptionsFromVariations(product.id),
-        getProductVariations(product.id),
     ]);
 
     const mappedProduct = applyMapping(product, [
@@ -69,7 +68,6 @@ export default async function ProductPage(props: ProductPageProps) {
             images={mappedProduct.images || []}
             colorOptions={colorOptions}
             sizeOptions={sizeOptions}
-            variations={variations}
             slug={mappedProduct.slug}
         />
     );
