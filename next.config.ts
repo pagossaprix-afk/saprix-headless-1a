@@ -38,17 +38,17 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Redirects para migración de /tienda a /productos
+
   async redirects() {
     return [
       {
-        source: '/tienda',
-        destination: '/productos',
+        source: '/productos',
+        destination: '/tienda',
         permanent: true,
       },
       {
-        source: '/tienda/:path*',
-        destination: '/productos/:path*',
+        source: '/productos/page/:page',
+        destination: '/tienda',
         permanent: true,
       },
     ];
