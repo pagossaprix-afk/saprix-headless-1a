@@ -733,7 +733,7 @@ export default function FutsalHeader() {
                     <span className="absolute -top-2 -right-4 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#f42121] text-xs text-white">{String(contextCartCount).padStart(2, "0")}</span>
                   </motion.button>
                 </SheetTrigger>
-                <SheetContent side="right" hideClose className="w-full sm:w-[480px] p-0 flex flex-col">
+                <SheetContent side="right" className="w-full sm:w-[480px] p-0 flex flex-col">
                   <SheetHeader className="flex flex-row items-center justify-between border-b border-gray-200 dark:border-gray-800 px-6 py-4 bg-white dark:bg-gray-900 space-y-0">
                     <div className="flex items-center gap-2">
                       <ShoppingCart size={20} className="text-saprix-electric-blue" />
